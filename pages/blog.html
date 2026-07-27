@@ -2,133 +2,210 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-      <meta name="description" content="个人记录 — 土木编程学习笔记与二次元日常">
-    <meta name="keywords" content="博客, 学习笔记, 土木编程, 二次元">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="description" content="个人记录 — 土木编程学习笔记与二次元日常">
+  <meta name="keywords" content="博客, 学习笔记, 土木编程, 二次元">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>个人记录 — merinomo</title>
   <link rel="stylesheet" href="../assets/css/style.css">
   <style>
-    body{font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;background:linear-gradient(135deg,#f5f7fa 0%,#e4edf5 100%);color:#222;margin:0;padding:0}
-    .container{max-width:960px;margin:2rem auto;padding:1.5rem;background:#fff;border-radius:14px;box-shadow:0 6px 24px rgba(16,24,40,0.08)}
-    h1{font-size:1.8rem;margin-bottom:0.2rem}
-    .meta{color:#667085;font-size:0.95rem;margin-bottom:1.5rem}
-    .record{margin-top:1.2rem}
-    .record-box{
-      border:1px solid #eef2f7;padding:20px;border-radius:14px;
-      background:#fff;position:relative;
-      transition:transform 0.25s ease,box-shadow 0.25s ease;
-    }
-    .record-box:hover{
-      transform:translateY(-3px);
-      box-shadow:0 8px 28px rgba(16,24,40,0.10);
-    }
-    .record-content{display:flex;gap:24px;align-items:flex-start}
-
-    /* 图片容器 + hover 等比例放大 */
-    .img-wrapper{flex-shrink:0;width:240px;max-width:40%;border-radius:8px;line-height:0}
-    .img-wrapper picture,.img-wrapper img{
-      width:100%;height:auto;display:block;border-radius:8px;border:1px solid #eef2f7;
-      transition:transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94),box-shadow 0.35s ease;
-    }
-    .record-box:hover .img-wrapper img,.record-box:hover .img-wrapper picture{
-      transform:scale(1.4);
-      box-shadow:0 8px 24px rgba(0,0,0,0.12);
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+      color: #222;
+      margin: 0;
+      padding: 0;
     }
 
-    .record-text{flex:1}
-    .record-text h2{font-size:1.2rem;margin:0 0 0.4rem;color:#1a202c}
-    .caption{color:#475569;line-height:1.7;margin:0}
-
-    .record-badge{
-      position:absolute;right:14px;bottom:14px;
-      background:rgba(26,115,232,0.92);color:#fff;
-      padding:6px 12px;border-radius:999px;font-size:12px;
-      box-shadow:0 4px 12px rgba(26,115,232,0.18);
-      display:inline-flex;align-items:center;gap:6px;
-      backdrop-filter:blur(4px);
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1.5rem 1rem;
     }
-    .record-badge .icon{font-size:12px;opacity:0.95}
 
-    @media (max-width:600px){
-      .img-wrapper{width:100%;max-width:100%}
-      .img-wrapper img{max-width:200px}
-      .record-badge{right:10px;bottom:10px;padding:5px 10px;font-size:11px}
-      .record-content{flex-direction:column}
-      .record-box:hover .img-wrapper img,.record-box:hover .img-wrapper picture{transform:scale(1.2)}
+    .page-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+      padding: 0 0.5rem;
+    }
+
+    .page-meta {
+      color: #667085;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+      padding: 0 0.5rem;
+    }
+
+    /* ── 记录卡片 ── */
+    .record-card {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      margin-bottom: 1.2rem;
+      overflow: hidden;
+      border: 1px solid #eef2f7;
+      transition: box-shadow 0.25s ease;
+    }
+
+    .record-card:hover {
+      box-shadow: 0 6px 24px rgba(0,0,0,0.10);
+    }
+
+    .record-card a {
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      gap: 0;
+    }
+
+    /* 图片区域 - 固定宽高比 + 裁剪 */
+    .record-thumb {
+      width: 200px;
+      min-width: 200px;
+      height: 150px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #f0f2f5;
+    }
+
+    .record-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+
+    .record-card:hover .record-thumb img {
+      transform: scale(1.08);
+    }
+
+    /* 文字区域 */
+    .record-info {
+      flex: 1;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .record-info h2 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin: 0 0 6px;
+      color: #1a202c;
+      line-height: 1.4;
+    }
+
+    .record-info .desc {
+      font-size: 0.88rem;
+      color: #475569;
+      margin: 0 0 8px;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .record-info .location {
+      font-size: 0.8rem;
+      color: #8b95a5;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* ── 响应式 ── */
+    @media (max-width: 600px) {
+      .container {
+        padding: 1rem 0.8rem;
+      }
+
+      .record-card a {
+        flex-direction: column;
+      }
+
+      .record-thumb {
+        width: 100%;
+        min-width: 100%;
+        height: 200px;
+      }
+
+      .record-info {
+        padding: 12px 14px;
+      }
     }
   </style>
 </head>
 <body>
-<nav class="navbar">
+  <nav class="navbar">
     <div class="navbar-brand"><a href="../index.html">Merino Moの主页 ✨</a></div>
     <div class="navbar-links">
-        <a href="../index.html">首页</a>
-        <a href="resume.html">个人介绍</a>
-        <a href="tools.html">小工具</a>
-        <a href="blog.html">个人记录</a>
-        <a href="demo.html">演示</a>
+      <a href="../index.html">首页</a>
+      <a href="resume.html">个人介绍</a>
+      <a href="tools.html">小工具</a>
+      <a href="blog.html">个人记录</a>
+      <a href="demo.html">演示</a>
     </div>
-</nav>
+  </nav>
 
-<main class="container">
-    <h1>个人记录</h1>
-    <div class="meta">记录列表 · 最新</div>
+  <main class="container">
+    <h1 class="page-title">个人记录</h1>
+    <p class="page-meta">记录列表 · 最新</p>
 
-    <article class="record record-box">
-      <div class="record-content">
-        <picture><source srcset="../assets/images/image4.webp" type="image/webp"><img src="../assets/images/image4.jpg" alt="全英班实习前与刘教授在西湖苑聚餐的合照。" loading="lazy"></picture>
-        <div class="record-text">
+    <article class="record-card">
+      <a href="../assets/images/image4.jpg" target="_blank">
+        <div class="record-thumb">
+          <img src="../assets/images/image4.jpg" alt="全英班实习前与刘教授在西湖苑聚餐的合照。" loading="lazy">
+        </div>
+        <div class="record-info">
           <h2>与刘教授的全英班聚餐</h2>
-          <p class="caption">全英班实习前与刘教授在西湖苑吃饭时拍的合照。</p>
+          <p class="desc">全英班实习前与刘教授在西湖苑吃饭时拍的合照。</p>
+          <span class="location">📍 华南理工大学 五山校区西湖苑 · 2026-07-12</span>
         </div>
-      </div>
-      <div class="record-badge" aria-hidden="true">
-        <span class="icon">📍</span>
-        <span>华南理工大学 五山校区西湖苑 · 2026-07-12</span>
-      </div>
+      </a>
     </article>
 
-    <article class="record record-box">
-      <div class="record-content">
-        <picture><source srcset="../assets/images/image2.webp" type="image/webp"><img src="../assets/images/image2.jpg" alt="我与刘耀鹏教授在佛山千灯湖参观南海文化中心项目时拍的合照。" loading="lazy"></picture>
-        <div class="record-text">
+    <article class="record-card">
+      <a href="../assets/images/image2.jpg" target="_blank">
+        <div class="record-thumb">
+          <img src="../assets/images/image2.jpg" alt="我与刘耀鹏教授在佛山千灯湖参观南海文化中心项目时拍的合照。" loading="lazy">
+        </div>
+        <div class="record-info">
           <h2>与刘耀鹏教授的合照</h2>
-          <p class="caption">我与刘耀鹏教授在佛山千灯湖参观南海文化中心项目时拍的合照。</p>
+          <p class="desc">我与刘耀鹏教授在佛山千灯湖参观南海文化中心项目时拍的合照。</p>
+          <span class="location">📍 佛山南海千灯湖 · 2025-05-10</span>
         </div>
-      </div>
-      <div class="record-badge" aria-hidden="true">
-        <span class="icon">📍</span>
-        <span>佛山南海千灯湖 · 2025-05-10</span>
-      </div>
+      </a>
     </article>
 
-    <article class="record record-box">
-      <div class="record-content">
-        <picture><source srcset="../assets/images/image3.webp" type="image/webp"><img src="../assets/images/image3.jpg" alt="我与刘耀鹏教授在港理工师生饭堂吃早餐时拍的合照。" loading="lazy"></picture>
-        <div class="record-text">
+    <article class="record-card">
+      <a href="../assets/images/image3.jpg" target="_blank">
+        <div class="record-thumb">
+          <img src="../assets/images/image3.jpg" alt="我与刘耀鹏教授在港理工师生饭堂吃早餐时拍的合照。" loading="lazy">
+        </div>
+        <div class="record-info">
           <h2>与刘耀鹏教授的合照</h2>
-          <p class="caption">我与刘耀鹏教授在港理工师生饭堂吃早餐时拍的合照。</p>
+          <p class="desc">我与刘耀鹏教授在港理工师生饭堂吃早餐时拍的合照。</p>
+          <span class="location">📍 红磡 香港理工大学 · 2025-07-12</span>
         </div>
-      </div>
-      <div class="record-badge" aria-hidden="true">
-        <span class="icon">📍</span>
-        <span>红磡 香港理工大学 · 2025-07-12</span>
-      </div>
+      </a>
     </article>
 
-    <article class="record record-box">
-      <div class="record-content">
-        <picture><source srcset="../assets/images/image1.webp" type="image/webp"><img src="../assets/images/image1.jpg" alt="我与TonyYang的合照（华南理工大学五山校区，2026年6月5日）" loading="lazy"></picture>
-        <div class="record-text">
+    <article class="record-card">
+      <a href="../assets/images/image1.jpg" target="_blank">
+        <div class="record-thumb">
+          <img src="../assets/images/image1.jpg" alt="我与 TonyYang 的合照（华南理工大学五山校区，2026年6月5日）" loading="lazy">
+        </div>
+        <div class="record-info">
           <h2>与 Prof. TonyYang 的合照</h2>
-          <p class="caption">我与 Prof. TonyYang 在课程结束之后拍的合照。</p>
+          <p class="desc">我与 Prof. TonyYang 在课程结束之后拍的合照。</p>
+          <span class="location">📍 华南理工大学 五山校区 · 2026-06-05</span>
         </div>
-      </div>
-      <div class="record-badge" aria-hidden="true">
-        <span class="icon">📍</span>
-        <span>华南理工大学 五山校区 · 2026-06-05</span>
-      </div>
+      </a>
     </article>
 
   </main>
