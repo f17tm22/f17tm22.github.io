@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>混凝土强度等级表</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        :root {
+            --bg: #f4f5f7;
+            --card: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --head: #b96b6b;
+            --head-text: #fff3f3;
+            --odd: #fef2f2;
+            --even: #fde8e8;
+            --hover: #ffe4e6;
+            --accent: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 32px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 20px 22px 8px;
+        }
+
+        .title {
+            margin: 0;
+            font-size: 30px;
+            text-align: center;
+            color: var(--accent);
+            letter-spacing: 1px;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 22px 18px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hint {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .search {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 14px;
+            min-width: 180px;
+            outline: none;
+        }
+
+        .search:focus {
+            border-color: #fca5a5;
+            box-shadow: 0 0 0 3px rgba(252, 165, 165, 0.25);
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th,
+        td {
+            padding: 12px 14px;
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            font-size: 15px;
+            white-space: nowrap;
+        }
+
+        th {
+            background: var(--head);
+            color: var(--head-text);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        tbody tr:nth-child(odd) td {
+            background: var(--odd);
+        }
+
+        tbody tr:nth-child(even) td {
+            background: var(--even);
+        }
+
+        tbody tr:hover td {
+            background: var(--hover);
+        }
+
+        tr > *:last-child {
+            border-right: none;
+        }
+
+        tbody tr:last-child > * {
+            border-bottom: none;
+        }
+
+        .sort-mark {
+            margin-left: 6px;
+            font-size: 12px;
+        }
+
+        .empty {
+            text-align: center;
+            color: var(--muted);
+            padding: 16px;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <div class="site-bar">
+        <span>📊 混凝土强度等级表</span>
+        <a href="../index.html">← 返回首页</a>
+    </div>
+    <div id="app" class="container">
+        <header class="header">
+            <h1 class="title">混凝土强度等级</h1>
+        </header>
+
+        <div class="toolbar">
+            <div class="hint">点击列名可排序；输入等级可筛选（如 C25）</div>
+            <input v-model.trim="keyword" class="search" type="text" placeholder="筛选等级..." />
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th
+                            v-for="col in columns"
+                            :key="col.key"
+                            @click="sortBy(col.key)"
+                        >
+                            {{ col.label }}
+                            <span v-if="sortKey === col.key" class="sort-mark">{{ sortAsc ? '▲' : '▼' }}</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="row in displayRows" :key="row.grade">
+                        <td>{{ row.grade }}</td>
+                        <td>{{ row.fc }}</td>
+                        <td>{{ row.ft }}</td>
+                        <td>{{ row.ftk }}</td>
+                        <td>{{ row.ec }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div v-if="displayRows.length === 0" class="empty">没有匹配的数据</div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    keyword: '',
+                    sortKey: 'grade',
+                    sortAsc: true,
+                    columns: [
+                        { key: 'grade', label: '强度等级' },
+                        { key: 'fc', label: 'fc(MPa)' },
+                        { key: 'ft', label: 'ft(MPa)' },
+                        { key: 'ftk', label: 'ftk(MPa)' },
+                        { key: 'ec', label: 'Ec(MPa)' },
+                    ],
+                    rows: [
+                        { grade: 'C15', fc: 7.2, ft: 0.91, ftk: 1.27, ec: 22000 },
+                        { grade: 'C20', fc: 9.6, ft: 1.1, ftk: 1.54, ec: 25500 },
+                        { grade: 'C25', fc: 11.9, ft: 1.27, ftk: 1.78, ec: 28000 },
+                    ],
+                };
+            },
+            computed: {
+                displayRows() {
+                    const filterText = this.keyword.toUpperCase();
+                    const filtered = this.rows.filter((item) => item.grade.includes(filterText));
+                    const sorted = [...filtered];
+
+                    sorted.sort((a, b) => {
+                        const valueA = a[this.sortKey];
+                        const valueB = b[this.sortKey];
+                        const result = valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
+                        return this.sortAsc ? result : -result;
+                    });
+
+                    return sorted;
+                },
+            },
+            methods: {
+                sortBy(key) {
+                    if (this.sortKey === key) {
+                        this.sortAsc = !this.sortAsc;
+                        return;
+                    }
+                    this.sortKey = key;
+                    this.sortAsc = true;
+                },
+            },
+        }).mount('#app');
+    </script>
+</body>
+</html>

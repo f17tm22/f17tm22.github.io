@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+        <meta name="description" content="实用工具集合 — 工程计算与效率工具">
+    <meta name="keywords" content="工具, 工程计算, 求解器, 地震分析">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merino Mo | 我的小工具</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem 4rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 2.2rem;
+        }
+
+        .page-header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .page-header p {
+            color: #4a5568;
+            font-size: 1.05rem;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+
+        .tool-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 1.3rem 1.1rem;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+            border: 1px solid #eef2f7;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .tool-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        .tool-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+
+        .tool-desc {
+            color: #4a5568;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .tool-tag {
+            display: inline-block;
+            margin-top: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            background: #fef3f8;
+            color: #d53f8c;
+            font-weight: 600;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem 1rem 2rem;
+            color: #718096;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand"><a href="../index.html">Merino Moの主页 ✨</a></div>
+        <div class="navbar-links">
+            <a href="../index.html">首页</a>
+            <a href="resume.html">个人介绍</a>
+            <a href="tools.html">小工具</a>
+            <a href="blog.html">个人记录</a>
+            <a href="demo.html">演示</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>小工具罗列页</h1>
+            <p>这里整理了我常用的学习 / 工程 / 编程小工具。</p>
+        </div>
+
+        <section class="tools-grid">
+            <a class="tool-link" href="solver.html">
+                <article class="tool-card">
+                    <h2 class="tool-name">Solver</h2>
+                    <p class="tool-desc">求解相关小工具页面，快速进行参数输入与结果计算。</p>
+                    <span class="tool-tag">已上线</span>
+                </article>
+            </a>
+
+            <a class="tool-link" href="GSAP_demo.html">
+                <article class="tool-card">
+                    <h2 class="tool-name">GSAP Demo</h2>
+                    <p class="tool-desc">GSAP 动画演示页面，用于展示交互动画效果与实现方式。</p>
+                    <span class="tool-tag">已上线</span>
+                </article>
+            </a>
+
+            <a class="tool-link" href="concrete_grade_table.html">
+                <article class="tool-card">
+                    <h2 class="tool-name">Concrete Grade Table</h2>
+                    <p class="tool-desc">混凝土等级参数对照表，便于工程设计时快速查询。</p>
+                    <span class="tool-tag">已上线</span>
+                </article>
+            </a>
+
+            <a class="tool-link" href="seismic_analysis.html">
+                <article class="tool-card">
+                    <h2 class="tool-name">Seismic Analysis</h2>
+                    <p class="tool-desc">包含 SDOF / MDOF / 反应谱等交互计算与可视化工具。</p>
+                    <span class="tool-tag">已上线</span>
+                </article>
+            </a>
+        </section>
+    </main>
+
+    <footer>
+        <p class="copyright">© 2026 merinomo | 二次元技术宅的个人主页</p>
+        <p style="opacity:0.8;">Powered by GitHub Pages | May all the beauty be blessed. 🌸</p>
+    </footer>
+</body>
+</html>

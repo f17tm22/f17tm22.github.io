@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+        <meta name="description" content="Merino Mo 的个人简历 — 土木工程 / 软件开发">
+    <meta name="keywords" content="简历, 土木工程, 结构分析, 前端开发">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>莫子健 - 个人简历</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        /* 全局样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px 0;
+        }
+
+        /* 容器样式 */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* 简历主卡片 */
+        .resume-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        /* 头部个人信息 */
+        .resume-header {
+            background-color: #165DFF;
+            color: #fff;
+            padding: 40px 50px;
+        }
+
+        /* 头部内容容器：实现头像和文字左右分布、垂直居中 */
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap; /* 小屏自动换行，避免挤在一起 */
+            gap: 20px; /* 头像和文字的间距，小屏生效 */
+        }
+        /* 个人头像样式：圆形+防变形+固定尺寸 */
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%; /* 核心：正方形变圆形 */
+            object-fit: cover; /* 关键：照片自动裁剪居中，不拉伸变形 */
+            flex-shrink: 0; /* 防止头像被压缩 */
+            border: 3px solid #fff; /* 白色边框，和蓝色头部背景对比更美观 */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* 轻微阴影，提升层次感 */
+        }
+        /* 响应式：手机端头像变小，适配小屏 */
+        @media (max-width: 768px) {
+            .avatar {
+                width: 80px;
+                height: 80px;
+                margin: 0 auto; /* 小屏头像居中显示 */
+            }
+        }
+
+        .resume-header h1 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .info-list {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px 30px;
+            font-size: 16px;
+        }
+
+        .info-list li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-list li i {
+            font-size: 18px;
+        }
+
+        /* 导航栏 */
+        .resume-nav {
+            padding: 15px 50px;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            background: #fff;
+            z-index: 99;
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+
+        .resume-nav a {
+            color: #666;
+            text-decoration: none;
+            font-size: 15px;
+            transition: color 0.3s;
+        }
+
+        .resume-nav a:hover, .resume-nav a.active {
+            color: #165DFF;
+            font-weight: 500;
+        }
+
+        /* 主体内容 */
+        .resume-body {
+            padding: 40px 50px;
+        }
+
+        /* 通用板块样式 */
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: #165DFF;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8f3ff;
+            font-weight: 600;
+        }
+
+        .section-content {
+            font-size: 15px;
+            color: #444;
+        }
+
+        /* 技能摘要 */
+        .skill-list {
+            list-style: disc;
+            padding-left: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 20px;
+        }
+
+        /* 教育背景 */
+        .edu-item {
+            margin-bottom: 15px;
+        }
+
+        .edu-item .time {
+            color: #165DFF;
+            font-weight: 500;
+            margin-right: 15px;
+        }
+
+        /* 经历/荣誉 卡片 */
+        .exp-item, .honor-item {
+            background: #fafbff;
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-left: 3px solid transparent;
+        }
+
+        .exp-item:hover, .honor-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(22, 93, 255, 0.1);
+            border-left-color: #165DFF;
+        }
+
+        .exp-item .title, .honor-item .title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .exp-item p {
+            margin-bottom: 10px;
+        }
+
+        .exp-item p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 软著样式 */
+        .soft-item {
+            padding-left: 20px;
+            line-height: 1.8;
+        }
+
+        /* 回到顶部按钮 */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 45px;
+            height: 45px;
+            background: #165DFF;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(22, 93, 255, 0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 999;
+        }
+
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .resume-header {
+                padding: 30px 20px;
+            }
+
+            .resume-nav {
+                padding: 15px 20px;
+                gap: 15px;
+            }
+
+            .resume-body {
+                padding: 30px 20px;
+            }
+
+            .info-list {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .back-to-top {
+                width: 40px;
+                height: 40px;
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+    </style>
+    <!-- 引入图标库 -->
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<nav class="navbar">
+    <div class="navbar-brand"><a href="../index.html">Merino Moの主页 ✨</a></div>
+    <div class="navbar-links">
+        <a href="../index.html">首页</a>
+        <a href="resume.html">个人介绍</a>
+        <a href="tools.html">小工具</a>
+        <a href="blog.html">个人记录</a>
+        <a href="demo.html">演示</a>
+    </div>
+</nav>
+
+    <div class="container">
+        <div class="resume-card">
+            <!-- 头部个人信息 -->
+            <header class="resume-header">
+                <!-- 新增：头像+文字的flex容器，实现头像靠右、文字靠左 -->
+                <div class="header-content">
+                    <div class="text-info">
+                        <h1>莫子健</h1>
+                        <ul class="info-list">
+                            <li><i class="fas fa-map-marker-alt"></i>广东省广州市天河区五山路381号华南理工大学</li>
+                            <li><i class="fas fa-phone"></i>13724092680</li>
+                            <li><i class="fas fa-envelope"></i>202330332231@mail.scut.edu.cn</li>
+                            <li><i class="fas fa-graduation-cap"></i>23级土木卓越全英班</li>
+                            <li><i class="fas fa-id-card"></i>学号：202330332231</li>
+                        </ul>
+                    </div>
+                    <!-- 核心：个人头像标签，src是照片文件名，alt是照片描述（必加） -->
+                    <img src="../assets/images/image.png" alt="莫子健个人照片" class="avatar">
+                </div>
+            </header>
+            <!-- 导航栏 -->
+            <nav class="resume-nav">
+                <a href="#skill" class="nav-link"><i class="fas fa-cogs"></i> 技能摘要</a>
+                <a href="#education" class="nav-link"><i class="fas fa-school"></i> 教育背景</a>
+                <a href="#experience" class="nav-link"><i class="fas fa-briefcase"></i> 项目经历</a>
+                <a href="#honor" class="nav-link"><i class="fas fa-medal"></i> 荣誉表彰</a>
+                <a href="#soft" class="nav-link"><i class="fas fa-file-code"></i> 软件著作权</a>
+            </nav>
+
+            <!-- 主体内容 -->
+            <main class="resume-body">
+                <!-- 技能摘要 -->
+                <section class="section" id="skill">
+                    <h2 class="section-title">技能摘要</h2>
+                    <div class="section-content">
+                        <ul class="skill-list">
+                            <li>熟练使用C++、Python等编程语言</li>
+                            <li>掌握Blender、Midas、AutoCAD等建模软件操作</li>
+                            <li>能运用3D打印机及相应切片软件完成模型打印</li>
+                            <li>可使用ABAQUS和MATLAB进行简单的有限元分析</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- 教育背景 -->
+                <section class="section" id="education">
+                    <h2 class="section-title">教育背景</h2>
+                    <div class="section-content">
+                        <div class="edu-item">
+                            <span class="time">2020.09 ~ 2023.06</span>
+                            <span>广东实验中学</span>
+                        </div>
+                        <div class="edu-item">
+                            <span class="time">2023.09 ~ 2027.07</span>
+                            <span>华南理工大学 - 土木卓越全英班</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 项目经历 -->
+                <section class="section" id="experience">
+                    <h2 class="section-title">项目经历</h2>
+                    <div class="section-content">
+                        <div class="exp-item">
+                            <div class="title">2023-2024年 魏鹏老师 SRP项目</div>
+                            <p>运用拍照建模技术将照片转化为stl文件格式模型，对模型修改后通过切片软件切片并完成3D打印；创新性运用模型隐式表达技术，将模型转化为SDF（Signed Distance Function）表达并实现参数化修改，完成底层代码编写。</p>
+                            <p>将模型导入MATLAB创建几何模型并开展有限元力学分析，从底层通过C++、Python、MATLAB代码实现参数化模型外观、力学及材料属性的修改。</p>
+                        </div>
+                        <div class="exp-item">
+                            <div class="title">2024-2025年 刘耀鹏（Prof. Y. P. Liu）老师 SRP项目</div>
+                            <p>项目目标：运用深度学习技术结合钢结构试验资料，实现任意钢结构扭矩和扭转角的输出，并基于陈绍礼（Prof. S. L. Chan）老师已纳入香港、新加坡等地区钢结构设计规范的二阶直接分析法开展深入研究。</p>
+                            <p>作为主要成员，负责深度学习模型训练、试验数据提取筛选与处理、前端网站搭建，同时参与专利申请及论文撰写工作。</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 荣誉表彰 -->
+                <section class="section" id="honor">
+                    <h2 class="section-title">荣誉和表彰</h2>
+                    <div class="section-content">
+                        <div class="honor-item">2018年全国青少年信息学奥林匹克联赛（NOIP）广东赛区普及组（C++组）初赛通过，获复赛个人二等奖。</div>
+                        <div class="honor-item">2023年华南理工大学结构竞赛校赛二等奖（主要成员）。</div>
+                        <div class="honor-item">2023年春运广州白云站“优秀志愿者代表”，担任志愿者队伍团支书。</div>
+                        <div class="honor-item">2024年“深圳杯”数学建模挑战赛广东赛区团体A题一等奖（主要成员）。</div>
+                        <div class="honor-item">大一寒/暑假，作为土交院“古筑精鉴”古建筑安全调研实践队主要成员，参与古建筑瑕疵数据收集分析，运用YOLO v5深度学习算法识别古建筑瑕疵，准确率接近90%。</div>
+                        <div class="honor-item">大三，作为小组主要成员，以YOLOv10s为基底模型训练工地现场钢管及钢筋数量实时检测视觉识别模型，完成模型泛化优化，使其在多种识别条件不良工况下保持较高识别精度。</div>
+                        <div class="honor-item">大三课程设计中，独立开发钢筋混凝土任意对称截面全过程分析软件：Python搭建操作UI，参考规范完成钢筋混凝土截面本构关系建模、计算及绘图；创新性采用json格式存储截面参数，对自定义截面做严格边界判定，保障计算结果正确性。</div>
+                        <div class="honor-item">英语能力：四级531分，六级529分；学业成绩：均分85分。</div>
+                    </div>
+                </section>
+
+                <!-- 软件著作权 -->
+                <section class="section" id="soft">
+                    <h2 class="section-title">软件著作权</h2>
+                    <div class="section-content">
+                        <div class="soft-item">[1]莫子健等.SDF模型生成处理系统[简称:SDF生成工具]V1.0：2025SR1166478[P].2025-07-19</div>
+                    </div>
+                </section>
+            </main>
+        </div>
+        </div>
+
+        <footer>
+        <p class="copyright">© 2026 merinomo | 二次元技术宅的个人主页</p>
+        <p style="opacity:0.8;">Powered by GitHub Pages | May all the beauty be blessed. 🌸</p>
+        </footer>
+
+        <!-- 回到顶部按钮 -->
+    <div class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <script>
+        // 1. 导航锚点平滑滚动
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                window.scrollTo({
+                    top: targetElement.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+                // 导航激活态切换
+                navLinks.forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // 2. 回到顶部按钮
+        const backToTop = document.getElementById('backToTop');
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 300) {
+                backToTop.classList.add('show');
+            } else {
+                backToTop.classList.remove('show');
+            }
+        });
+
+        backToTop.addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+            // 回到顶部后重置导航激活态
+            navLinks.forEach(l => l.classList.remove('active'));
+            navLinks[0].classList.add('active');
+        });
+
+        // 3. 滚动时自动更新导航激活态
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 100;
+                const sectionHeight = section.offsetHeight;
+                const sectionId = section.getAttribute('id');
+                if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+                    navLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href') === `#${sectionId}`) {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+        });
+
+        // 初始化导航激活态
+        window.onload = function() {
+            navLinks[0].classList.add('active');
+        };
+    </script>
+</body>
+</html>

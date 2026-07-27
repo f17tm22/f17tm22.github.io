@@ -1,0 +1,2043 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <meta name="description" content="抗震结构计算分析系统 — SDOF / MDOF / 反应谱">
+    <meta name="keywords" content="抗震, 结构分析, 地震, 反应谱">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>抗震结构计算分析系统 - Seismic Structural Analysis</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<style>
+:root {
+  --primary: #1a73e8;
+  --primary-dark: #1557b0;
+  --bg: #f0f2f5;
+  --card-bg: #ffffff;
+  --border: #d0d5dd;
+  --text: #1d2939;
+  --text-secondary: #667085;
+  --success: #12b76a;
+  --warning: #f79009;
+  --danger: #f04438;
+  --radius: 8px;
+  --shadow: 0 1px 3px rgba(16,24,40,0.1), 0 1px 2px rgba(16,24,40,0.06);
+}
+.header {
+  background: linear-gradient(135deg, #1a3a5c 0%, #2d6aa0 50%, #1a73e8 100%);
+  color: white; padding: 16px 32px; display: flex; align-items: center;
+  justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.header h1 { font-size: 22px; font-weight: 600; letter-spacing: 0.5px; }
+.header-sub { font-size: 13px; opacity: 0.85; margin-top: 2px; }
+.nav-tabs {
+  display: flex; background: var(--card-bg); border-bottom: 2px solid var(--border);
+  padding: 0 24px; gap: 0; overflow-x: auto;
+}
+.nav-tab {
+  padding: 14px 24px; font-size: 14px; font-weight: 500; cursor: pointer;
+  border: none; background: none; color: var(--text-secondary);
+  border-bottom: 3px solid transparent; transition: all 0.2s;
+  white-space: nowrap; position: relative;
+}
+.nav-tab:hover { color: var(--primary); background: #f5f8ff; }
+.nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+.main-content { max-width: 1400px; margin: 0 auto; padding: 24px; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.card {
+  background: var(--card-bg); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 24px; margin-bottom: 20px;
+  border: 1px solid var(--border);
+}
+.card-title {
+  font-size: 16px; font-weight: 600; margin-bottom: 16px;
+  padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title .icon { font-size: 20px; }
+.form-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+.form-group input, .form-group select {
+  padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;
+  font-size: 14px; transition: border-color 0.2s;
+}
+.form-group input:focus, .form-group select:focus {
+  outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
+}
+.btn {
+  padding: 10px 20px; border: none; border-radius: 6px; font-size: 14px;
+  font-weight: 500; cursor: pointer; transition: all 0.2s; display: inline-flex;
+  align-items: center; gap: 6px;
+}
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-success { background: var(--success); color: white; }
+.btn-success:hover { opacity: 0.9; }
+.btn-outline {
+  background: white; color: var(--primary); border: 1px solid var(--primary);
+}
+.btn-outline:hover { background: #f5f8ff; }
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+.chart-container { width: 100%; height: 400px; margin-top: 16px; }
+.chart-sm { height: 300px; }
+.chart-lg { height: 500px; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+.result-table {
+  width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px;
+}
+.result-table th, .result-table td {
+  padding: 8px 12px; text-align: center; border: 1px solid var(--border);
+}
+.result-table th { background: #f5f8ff; font-weight: 600; }
+.result-table tr:hover { background: #fafbfc; }
+.result-highlight {
+  background: #f0fdf4; color: var(--success); font-weight: 600;
+  padding: 2px 6px; border-radius: 4px;
+}
+.result-warn {
+  background: #fef3c7; color: #b45309; font-weight: 600;
+  padding: 2px 6px; border-radius: 4px;
+}
+.info-box {
+  background: #f0f7ff; border-left: 4px solid var(--primary);
+  padding: 12px 16px; border-radius: 4px; margin: 12px 0; font-size: 13px;
+}
+.info-box p { margin: 4px 0; }
+.structure-table { margin-top: 16px; overflow-x: auto; }
+.structure-table input {
+  width: 70px; padding: 4px 6px; border: 1px solid var(--border);
+  border-radius: 4px; font-size: 13px; text-align: center;
+}
+.structure-table select {
+  padding: 4px 6px; border: 1px solid var(--border);
+  border-radius: 4px; font-size: 13px;
+}
+.floor-input-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.floor-input-row label { font-size: 12px; font-weight: 500; }
+.param-highlight { font-weight: 600; color: var(--primary); }
+.section-label {
+  display: inline-block; background: var(--primary); color: white;
+  padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;
+  margin-left: 8px;
+}
+.summary-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px; margin-top: 12px;
+}
+.summary-item {
+  background: #f5f8ff; padding: 12px; border-radius: var(--radius);
+  text-align: center; border: 1px solid #e0e7ff;
+}
+.summary-item .value { font-size: 20px; font-weight: 700; color: var(--primary); }
+.summary-item .label { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+.formula-box {
+  background: #fafafa; border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 12px 16px; margin: 8px 0; font-family: 'Times New Roman', serif;
+  font-size: 14px;
+}
+.spectrum-plot-tooltip {
+  position: absolute; background: rgba(0,0,0,0.8); color: white;
+  padding: 4px 8px; border-radius: 4px; font-size: 12px; pointer-events: none;
+}
+</style>
+</head>
+<body>
+<div class="site-bar">
+    <span>🏗️ 抗震结构计算分析系统</span>
+    <a href="../index.html">← 返回首页</a>
+</div>
+<div id="app">
+<div class="header">
+  <div>
+    <h1>🏗️ 抗震结构计算分析系统</h1>
+    <div class="header-sub">Seismic Structural Analysis System — SDOF · MDOF · 反应谱 · 底部剪力法</div>
+  </div>
+  <div style="text-align:right;font-size:13px;">
+    <div>基于 GB 50011-2010 建筑抗震设计规范</div>
+    <div style="opacity:0.7;">Runge-Kutta · Newmark-β · Jacobi特征值</div>
+  </div>
+</div>
+
+<nav class="nav-tabs">
+  <button class="nav-tab" :class="{ active: currentTab === 'structure' }"
+    @click="currentTab = 'structure'">🏢 结构定义</button>
+  <button class="nav-tab" :class="{ active: currentTab === 'sdof' }"
+    @click="currentTab = 'sdof'; if(!sdofComputed) computeSDOF()">📐 SDOF 单自由度</button>
+  <button class="nav-tab" :class="{ active: currentTab === 'mdof' }"
+    @click="currentTab = 'mdof'; if(!mdofComputed) computeMDOF()">📊 MDOF 多自由度</button>
+  <button class="nav-tab" :class="{ active: currentTab === 'spectrum' }"
+    @click="currentTab = 'spectrum'; computeResponseSpectrum()">📈 振型分解反应谱法</button>
+  <button class="nav-tab" :class="{ active: currentTab === 'baseshear' }"
+    @click="currentTab = 'baseshear'">⚡ 底部剪力法</button>
+</nav>
+
+<div class="main-content">
+
+<!-- ==================== STRUCTURE DEFINITION TAB ==================== -->
+<div class="tab-content" :class="{ active: currentTab === 'structure' }">
+  <div class="card">
+    <div class="card-title"><span class="icon">🏢</span> 框架结构参数定义</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>结构层数 n</label>
+        <input type="number" v-model.number="structure.nStories" min="1" max="20" @change="onStructureChange">
+      </div>
+      <div class="form-group">
+        <label>跨度数</label>
+        <input type="number" v-model.number="structure.nBays" min="1" max="5" @change="onStructureChange">
+      </div>
+      <div class="form-group">
+        <label>首层层高 (m)</label>
+        <input type="number" v-model.number="structure.hFirst" min="2" max="8" step="0.1">
+      </div>
+      <div class="form-group">
+        <label>标准层层高 (m)</label>
+        <input type="number" v-model.number="structure.hTypical" min="2" max="6" step="0.1">
+      </div>
+      <div class="form-group">
+        <label>跨度 (m)</label>
+        <input type="number" v-model.number="structure.spanWidth" min="3" max="12" step="0.1">
+      </div>
+      <div class="form-group">
+        <label>混凝土强度等级</label>
+        <select v-model.number="structure.concreteGrade">
+          <option value="30">C30</option>
+          <option value="35">C35</option>
+          <option value="40">C40</option>
+          <option value="45">C45</option>
+          <option value="50">C50</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>弹性模量 E (MPa)</label>
+        <input type="number" v-model.number="structure.E" readonly style="background:#f5f5f5;">
+      </div>
+      <div class="form-group">
+        <label>恒荷载 (kN/m²)</label>
+        <input type="number" v-model.number="structure.deadLoad" min="0" max="20" step="0.5">
+      </div>
+      <div class="form-group">
+        <label>活荷载 (kN/m²)</label>
+        <input type="number" v-model.number="structure.liveLoad" min="0" max="10" step="0.5">
+      </div>
+    </div>
+
+    <div class="structure-table" style="margin-top:20px;">
+      <h4 style="margin-bottom:12px;">楼层参数设置</h4>
+      <table class="result-table">
+        <thead>
+          <tr>
+            <th>楼层</th>
+            <th>层高 (m)</th>
+            <th>柱截面 b×h (mm)</th>
+            <th>柱数量</th>
+            <th>梁截面 b×h (mm)</th>
+            <th>楼层质量 (t)</th>
+            <th>层刚度 (kN/m)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(floor, idx) in structure.floors" :key="idx">
+            <td><strong>{{ idx + 1 }}</strong></td>
+            <td><input type="number" v-model.number="floor.height" min="2" max="8" step="0.1" @change="updateFloorProperties"></td>
+            <td>
+              <input type="number" v-model.number="floor.colB" min="200" max="1200" step="50" style="width:60px;" @change="updateFloorProperties">
+              × <input type="number" v-model.number="floor.colH" min="200" max="1200" step="50" style="width:60px;" @change="updateFloorProperties">
+            </td>
+            <td><input type="number" v-model.number="floor.nCols" min="2" max="12" @change="updateFloorProperties" style="width:50px;"></td>
+            <td>
+              <input type="number" v-model.number="floor.beamB" min="200" max="500" step="50" style="width:55px;" @change="updateFloorProperties">
+              × <input type="number" v-model.number="floor.beamH" min="300" max="1000" step="50" style="width:55px;" @change="updateFloorProperties">
+            </td>
+            <td><span class="param-highlight">{{ floor.mass.toFixed(1) }}</span></td>
+            <td><span class="param-highlight">{{ (floor.stiffness / 1e3).toFixed(1) }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- end first card -->
+
+  <!-- Frame visualization with Konva -->
+  <div class="two-col" style="margin-top:0;">
+    <div class="card">
+      <div class="card-title"><span class="icon">🏗️</span> 框架结构可视化 <span class="section-label">Konva</span></div>
+      <div id="frameCanvas" style="width:100%;height:450px;background:#fafbfc;border-radius:4px;"></div>
+    </div>
+    <div class="card">
+      <div class="info-box" style="margin-top:0;">
+        <p><strong>说明：</strong></p>
+        <p>• 采用剪切型框架模型，每层质量集中于楼板标高处</p>
+        <p>• 层间刚度 k = Σ 12EI/h³（柱两端固定，忽略梁变形影响）</p>
+        <p>• 柱惯性矩 I = bh³/12，E 按混凝土等级取值</p>
+        <p>• 楼层质量 = (恒载 + 0.5×活载) × 楼层面积 / g（重力荷载代表值）</p>
+      </div>
+      <div style="margin-top:16px;font-size:13px;color:var(--text-secondary);">
+        <p><strong>总高度：</strong>{{ totalHeight.toFixed(1) }} m</p>
+        <p><strong>总质量：</strong>{{ totalMass.toFixed(1) }} t</p>
+        <p><strong>首层刚度：</strong>{{ structure.floors[0] ? (structure.floors[0].stiffness/1e3).toFixed(1) : '--' }} ×10³ kN/m</p>
+      </div>
+    </div>
+  </div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" @click="computeAll">🔄 计算全部（SDOF + MDOF + 反应谱 + 底部剪力法）</button>
+      <button class="btn btn-outline" @click="resetStructure">↩️ 恢复默认</button>
+    </div>
+  </div>
+
+  <!-- Quick summary after compute -->
+  <div v-if="allComputed" class="card" style="border-left: 4px solid var(--success);">
+    <div class="card-title"><span class="icon">✅</span> 结构计算摘要</div>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="value">{{ structure.nStories }}</div>
+        <div class="label">总层数</div>
+      </div>
+      <div class="summary-item">
+        <div class="value">{{ totalHeight.toFixed(1) }}m</div>
+        <div class="label">总高度</div>
+      </div>
+      <div class="summary-item">
+        <div class="value">{{ totalMass.toFixed(1) }}t</div>
+        <div class="label">总质量</div>
+      </div>
+      <div class="summary-item">
+        <div class="value">{{ mdofResult ? mdofResult.periods[0].toFixed(3) : '--' }}s</div>
+        <div class="label">基本周期 T₁</div>
+      </div>
+      <div class="summary-item">
+        <div class="value">{{ mdofResult ? mdofResult.periods[1] ? mdofResult.periods[1].toFixed(3) : '--' : '--' }}s</div>
+        <div class="label">第二周期 T₂</div>
+      </div>
+      <div class="summary-item">
+        <div class="value">{{ baseshearResult ? baseshearResult.FEk.toFixed(1) + ' kN' : '--' }}</div>
+        <div class="label">底部总剪力</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SDOF TAB ==================== -->
+<div class="tab-content" :class="{ active: currentTab === 'sdof' }">
+  <div class="card">
+    <div class="card-title"><span class="icon">📐</span> SDOF 单自由度体系分析 <span class="section-label">Runge-Kutta 4 · Newmark-β</span></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>质量 m (t)</label>
+        <input type="number" v-model.number="sdofParams.m" min="1" max="10000" step="1">
+      </div>
+      <div class="form-group">
+        <label>刚度 k (kN/m)</label>
+        <input type="number" v-model.number="sdofParams.k" min="100" max="1e7" step="100">
+      </div>
+      <div class="form-group">
+        <label>阻尼比 ζ</label>
+        <input type="number" v-model.number="sdofParams.zeta" min="0" max="0.2" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>地震动峰值加速度 (gal)</label>
+        <input type="number" v-model.number="sdofParams.PGA" min="10" max="1000" step="10">
+      </div>
+      <div class="form-group">
+        <label>求解时间步长 Δt (s)</label>
+        <input type="number" v-model.number="sdofParams.dt" min="0.001" max="0.1" step="0.001">
+      </div>
+      <div class="form-group">
+        <label>求解总时长 (s)</label>
+        <input type="number" v-model.number="sdofParams.tEnd" min="1" max="60" step="1">
+      </div>
+    </div>
+    <div class="info-box">
+      <p><strong>体系属性：</strong></p>
+      <p>ω = √(k/m) = <strong>{{ sdofDerived.omega.toFixed(3) }}</strong> rad/s &nbsp;|&nbsp;
+      T = <strong>{{ sdofDerived.T.toFixed(4) }}</strong> s &nbsp;|&nbsp;
+      f = <strong>{{ sdofDerived.f.toFixed(3) }}</strong> Hz &nbsp;|&nbsp;
+      c = <strong>{{ sdofDerived.c.toFixed(1) }}</strong> kN·s/m</p>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" @click="computeSDOF">🔬 执行 SDOF 分析</button>
+      <button class="btn btn-outline" @click="sdofParams.m = totalMass; sdofParams.k = structure.floors[0] ? structure.floors[0].stiffness : 50000">📋 从结构导入</button>
+    </div>
+  </div>
+
+  <div v-if="sdofComputed" class="two-col">
+    <div class="card">
+      <div class="card-title">📉 位移时程 — Runge-Kutta 4 vs Newmark-β</div>
+      <div class="chart-container chart-lg" id="sdofDispChart"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 SDOF 结果对比</div>
+      <table class="result-table">
+        <thead>
+          <tr><th>指标</th><th>RK4</th><th>Newmark-β</th><th>误差</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>最大位移 (mm)</td>
+            <td><span class="result-highlight">{{ sdofResult.rk4.maxDisp.toFixed(3) }}</span></td>
+            <td><span class="result-highlight">{{ sdofResult.newmark.maxDisp.toFixed(3) }}</span></td>
+            <td>{{ ((Math.abs(sdofResult.rk4.maxDisp - sdofResult.newmark.maxDisp) / sdofResult.rk4.maxDisp) * 100).toFixed(2) }}%</td>
+          </tr>
+          <tr>
+            <td>最大速度 (m/s)</td>
+            <td>{{ sdofResult.rk4.maxVel.toFixed(4) }}</td>
+            <td>{{ sdofResult.newmark.maxVel.toFixed(4) }}</td>
+            <td>--</td>
+          </tr>
+          <tr>
+            <td>最大加速度 (m/s²)</td>
+            <td>{{ sdofResult.rk4.maxAcc.toFixed(3) }}</td>
+            <td>{{ sdofResult.newmark.maxAcc.toFixed(3) }}</td>
+            <td>--</td>
+          </tr>
+          <tr>
+            <td>最大底部剪力 (kN)</td>
+            <td>{{ sdofResult.rk4.maxBaseShear.toFixed(1) }}</td>
+            <td>{{ sdofResult.newmark.maxBaseShear.toFixed(1) }}</td>
+            <td>--</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="chart-container chart-sm" id="sdofPhaseChart" style="margin-top:16px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MDOF TAB ==================== -->
+<div class="tab-content" :class="{ active: currentTab === 'mdof' }">
+  <div class="card">
+    <div class="card-title"><span class="icon">📊</span> MDOF 多自由度体系分析 <span class="section-label">特征值 · 模态分析 · 时程响应</span></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>阻尼比 ζ（所有模态）</label>
+        <input type="number" v-model.number="mdofParams.zeta" min="0.01" max="0.1" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>地震动峰值加速度 (gal)</label>
+        <input type="number" v-model.number="mdofParams.PGA" min="10" max="1000" step="10">
+      </div>
+      <div class="form-group">
+        <label>参与模态数</label>
+        <input type="number" v-model.number="mdofParams.nModes" min="1" :max="structure.nStories" step="1">
+      </div>
+      <div class="form-group">
+        <label>求解总时长 (s)</label>
+        <input type="number" v-model.number="mdofParams.mtEnd" min="1" max="60" step="1">
+      </div>
+      <div class="form-group">
+        <label>求解时间步长 Δt (s)</label>
+        <input type="number" v-model.number="mdofParams.mdt" min="0.001" max="0.05" step="0.001">
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" @click="computeMDOF">🔬 执行 MDOF 分析</button>
+    </div>
+  </div>
+
+  <div v-if="mdofComputed" class="two-col">
+    <div class="card">
+      <div class="card-title">📊 模态信息</div>
+      <table class="result-table">
+        <thead>
+          <tr><th>模态</th><th>周期 T (s)</th><th>频率 f (Hz)</th><th>圆频率 ω</th><th>质量参与系数</th></tr>
+        </thead>
+        <tbody>
+          <tr v-for="(period, i) in mdofResult.periods" :key="i">
+            <td><strong>#{{ i + 1 }}</strong></td>
+            <td><span class="result-highlight">{{ period.toFixed(4) }}</span></td>
+            <td>{{ mdofResult.freqs[i].toFixed(3) }}</td>
+            <td>{{ mdofResult.omegas[i].toFixed(3) }}</td>
+            <td>{{ (mdofResult.massPart[i] * 100).toFixed(1) }}%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">📈 模态振型</div>
+      <div class="chart-container chart-lg" id="modeShapeChart"></div>
+    </div>
+  </div>
+
+  <div v-if="mdofComputed" class="two-col">
+    <div class="card">
+      <div class="card-title">📉 顶层位移时程</div>
+      <div class="chart-container chart-lg" id="mdofDispChart"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚡ 各层最大响应</div>
+      <div class="chart-container chart-lg" id="mdofMaxChart"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== RESPONSE SPECTRUM TAB ==================== -->
+<div class="tab-content" :class="{ active: currentTab === 'spectrum' }">
+  <div class="card">
+    <div class="card-title"><span class="icon">📈</span> 振型分解反应谱法 <span class="section-label">GB 50011-2010 · SRSS / CQC</span></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>抗震设防烈度</label>
+        <select v-model.number="spectrumParams.intensity">
+          <option value="7">7度 (0.10g)</option>
+          <option value="7.5">7度半 (0.15g)</option>
+          <option value="8">8度 (0.20g)</option>
+          <option value="8.5">8度半 (0.30g)</option>
+          <option value="9">9度 (0.40g)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>设计地震分组</label>
+        <select v-model.number="spectrumParams.earthquakeGroup">
+          <option value="1">第一组</option>
+          <option value="2">第二组</option>
+          <option value="3">第三组</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>场地类别</label>
+        <select v-model="spectrumParams.siteClass">
+          <option value="I0">I₀</option>
+          <option value="I1">I₁</option>
+          <option value="II">II</option>
+          <option value="III">III</option>
+          <option value="IV">IV</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>地震影响系数最大值 α_max</label>
+        <input type="number" v-model.number="spectrumParams.alphaMax" step="0.01" readonly style="background:#f5f5f5;">
+      </div>
+      <div class="form-group">
+        <label>特征周期 T_g (s)</label>
+        <input type="number" v-model.number="spectrumParams.Tg" step="0.01" readonly style="background:#f5f5f5;">
+      </div>
+      <div class="form-group">
+        <label>阻尼比 ζ</label>
+        <input type="number" v-model.number="spectrumParams.zeta" min="0.01" max="0.2" step="0.01" @change="updateSpectrumParams">
+      </div>
+      <div class="form-group">
+        <label>组合方法</label>
+        <select v-model="spectrumParams.combineMethod">
+          <option value="SRSS">SRSS（平方和开方）</option>
+          <option value="CQC">CQC（完全二次组合）</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" @click="computeResponseSpectrum">📊 计算反应谱 & 振型分解</button>
+    </div>
+  </div>
+
+  <div v-if="spectrumComputed" class="two-col">
+    <div class="card">
+      <div class="card-title">📉 规范反应谱曲线</div>
+      <div class="chart-container chart-lg" id="spectrumCurveChart"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 模态地震作用</div>
+      <table class="result-table">
+        <thead>
+          <tr><th>模态</th><th>T (s)</th><th>α</th><th>参与质量 (t)</th><th>基底剪力 (kN)</th></tr>
+        </thead>
+        <tbody>
+          <tr v-for="(res, i) in spectrumResult.modalResults" :key="i">
+            <td><strong>#{{ i + 1 }}</strong></td>
+            <td>{{ spectrumResult.periods[i].toFixed(4) }}</td>
+            <td><span class="result-highlight">{{ res.alpha.toFixed(4) }}</span></td>
+            <td>{{ res.effectiveMass.toFixed(1) }}</td>
+            <td><span class="result-warn">{{ res.baseShear.toFixed(1) }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div v-if="spectrumComputed" class="two-col">
+    <div class="card">
+      <div class="card-title">📊 各层地震作用力分布</div>
+      <div class="chart-container chart-lg" id="spectrumForceChart"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📐 各层位移（SRSS/CQC 组合）</div>
+      <div class="chart-container chart-lg" id="spectrumDispChart"></div>
+    </div>
+  </div>
+
+  <div v-if="spectrumComputed" class="card">
+    <div class="card-title">📊 层间剪力与层间位移角</div>
+    <table class="result-table">
+      <thead>
+        <tr><th>楼层</th><th>楼层地震力 (kN)</th><th>层间剪力 (kN)</th><th>层间位移 (mm)</th><th>层间位移角</th><th>限值 (1/550)</th></tr>
+      </thead>
+      <tbody>
+        <tr v-for="(res, i) in spectrumResult.storyResults" :key="i">
+          <td><strong>{{ spectrumResult.storyResults.length - i }}</strong></td>
+          <td><span class="result-highlight">{{ res.floorForce.toFixed(1) }}</span></td>
+          <td><span class="result-warn">{{ res.storyShear.toFixed(1) }}</span></td>
+          <td>{{ res.storyDrift.toFixed(3) }}</td>
+          <td>{{ '1/' + res.driftRatio.toFixed(0) }}</td>
+          <td :style="{ color: res.driftRatio < 550 ? 'var(--danger)' : 'var(--success)' }">
+            {{ res.driftRatio < 550 ? '✗ 超限' : '✓ 满足' }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="info-box" style="margin-top:12px;">
+      <p><strong>结构底部总剪力：<span style="color:var(--danger);font-size:18px;">{{ spectrumResult.totalBaseShear.toFixed(1) }} kN</span></strong></p>
+      <p>剪重比：λ = V_Ek / G_eq = <strong>{{ (spectrumResult.totalBaseShear / (totalMass * 9.81)).toFixed(4) }}</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== BASE SHEAR TAB ==================== -->
+<div class="tab-content" :class="{ active: currentTab === 'baseshear' }">
+  <div class="card">
+    <div class="card-title"><span class="icon">⚡</span> 底部剪力法 <span class="section-label">GB 50011-2010 §5.2.1</span></div>
+    <div class="info-box">
+      <p><strong>适用范围：</strong>高度不超过40m、以剪切变形为主且质量和刚度沿高度分布较均匀的结构。</p>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>抗震设防烈度</label>
+        <select v-model.number="bsParams.intensity" @change="updateBSParams">
+          <option value="7">7度 (0.10g)</option>
+          <option value="7.5">7度半 (0.15g)</option>
+          <option value="8">8度 (0.20g)</option>
+          <option value="8.5">8度半 (0.30g)</option>
+          <option value="9">9度 (0.40g)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>场地类别</label>
+        <select v-model="bsParams.siteClass" @change="updateBSParams">
+          <option value="I0">I₀</option>
+          <option value="I1">I₁</option>
+          <option value="II">II</option>
+          <option value="III">III</option>
+          <option value="IV">IV</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>设计地震分组</label>
+        <select v-model.number="bsParams.earthquakeGroup" @change="updateBSParams">
+          <option value="1">第一组</option>
+          <option value="2">第二组</option>
+          <option value="3">第三组</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>基本周期 T₁ (s) <br><small>可手动输入或使用MDOF结果</small></label>
+        <input type="number" v-model.number="bsParams.T1" min="0.01" max="6" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>α_max</label>
+        <input type="number" v-model.number="bsParams.alphaMax" readonly style="background:#f5f5f5;">
+      </div>
+      <div class="form-group">
+        <label>T_g (s)</label>
+        <input type="number" v-model.number="bsParams.Tg" readonly style="background:#f5f5f5;">
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" @click="computeBaseShear">⚡ 执行底部剪力法计算</button>
+      <button class="btn btn-outline" @click="bsParams.T1 = mdofResult ? mdofResult.periods[0] : 0.5">📋 从 MDOF 获取 T₁</button>
+    </div>
+  </div>
+
+  <div v-if="baseshearComputed" class="two-col">
+    <div class="card">
+      <div class="card-title">📐 计算参数与过程</div>
+      <div class="formula-box">
+        <p>结构总重力荷载代表值：G<sub>eq</sub> = {{ totalMass.toFixed(1) }} × 9.81 = <strong>{{ (totalMass * 9.81).toFixed(1) }} kN</strong></p>
+        <p>地震影响系数 α₁(T₁={{ bsParams.T1.toFixed(3) }}s) = <strong>{{ baseshearResult.alpha1.toFixed(4) }}</strong></p>
+        <p>结构总水平地震作用：F<sub>Ek</sub> = α₁ × G<sub>eq</sub> = <strong style="color:var(--danger);font-size:16px;">{{ baseshearResult.FEk.toFixed(1) }} kN</strong></p>
+        <p v-if="baseshearResult.deltaN > 0">顶部附加地震作用系数：δ<sub>n</sub> = {{ baseshearResult.deltaN.toFixed(4) }}</p>
+        <p v-if="baseshearResult.deltaN > 0">顶部附加水平地震作用：ΔF<sub>n</sub> = {{ baseshearResult.additionalTopForce.toFixed(1) }} kN</p>
+      </div>
+
+      <table class="result-table" style="margin-top:16px;">
+        <thead>
+          <tr><th>楼层</th><th>高度 Hᵢ (m)</th><th>重力 Gᵢ (kN)</th><th>GᵢHᵢ</th><th>Fᵢ (kN)</th><th>Vᵢ (kN)</th></tr>
+        </thead>
+        <tbody>
+          <tr v-for="(res, i) in baseshearResult.floorResults" :key="i">
+            <td><strong>{{ baseshearResult.floorResults.length - i }}</strong></td>
+            <td>{{ res.height.toFixed(1) }}</td>
+            <td>{{ res.Gi.toFixed(1) }}</td>
+            <td>{{ (res.Gi * res.height).toFixed(0) }}</td>
+            <td><span class="result-highlight">{{ res.Fi.toFixed(1) }}</span></td>
+            <td><span class="result-warn">{{ res.Vi.toFixed(1) }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📊 楼层地震作用与剪力分布</div>
+      <div class="chart-container chart-lg" id="bsForceChart"></div>
+    </div>
+  </div>
+
+  <div v-if="baseshearComputed" class="card">
+    <div class="card-title">📋 底部剪力法与振型分解反应谱法对比</div>
+    <table class="result-table">
+      <thead>
+        <tr><th>楼层</th><th>底部剪力法 Fᵢ (kN)</th><th>反应谱法 Fᵢ (kN)</th><th>底部剪力法 Vᵢ (kN)</th><th>反应谱法 Vᵢ (kN)</th></tr>
+      </thead>
+      <tbody>
+        <tr v-for="(res, i) in baseshearResult.floorResults" :key="i">
+          <td><strong>{{ baseshearResult.floorResults.length - i }}</strong></td>
+          <td><span class="result-highlight">{{ res.Fi.toFixed(1) }}</span></td>
+          <td><span class="result-highlight">{{ spectrumComputed ? spectrumResult.storyResults[baseshearResult.floorResults.length-1-i].floorForce.toFixed(1) : '--' }}</span></td>
+          <td><span class="result-warn">{{ res.Vi.toFixed(1) }}</span></td>
+          <td><span class="result-warn">{{ spectrumComputed ? spectrumResult.storyResults[baseshearResult.floorResults.length-1-i].storyShear.toFixed(1) : '--' }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div><!-- main-content -->
+</div><!-- #app -->
+
+<script>
+// ===================================================================
+// NOISE-JS 轻量版 — 地震动生成
+// ===================================================================
+class SeismicGroundMotion {
+  static generateElCentroLike(dt, tEnd, PGA) {
+    // Generate a synthetic El-Centro-like ground motion using modulated white noise
+    // plus deterministic low-frequency pulses
+    const n = Math.floor(tEnd / dt) + 1;
+    const acc = new Array(n).fill(0);
+    // Envelope function (exponential rise and decay)
+    const t1 = 1.5, t2 = 4.0, c = 0.15; // envelope parameters
+
+    // Simple pseudo-random based on seed-iteration (deterministic)
+    let seed = 12345;
+    function rand() {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      return seed / 0x7fffffff;
+    }
+
+    // Generate white noise and apply envelope
+    for (let i = 0; i < n; i++) {
+      const t = i * dt;
+      // Envelope
+      let env;
+      if (t < t1) {
+        env = (t / t1) ** 2;
+      } else if (t < t2) {
+        env = 1.0;
+      } else {
+        env = Math.exp(-c * (t - t2));
+      }
+      // Correlated noise (approximate Kanai-Tajimi spectrum)
+      let noise = 0;
+      const nAvg = 5;
+      for (let j = 0; j < nAvg; j++) {
+        noise += rand() * 2 - 1;
+      }
+      noise /= nAvg;
+      // Add deterministic pulses
+      const pulse1 = 0.4 * Math.sin(2 * Math.PI * 1.5 * t) * (t < 6 ? 1 : 0) * Math.exp(-0.1 * t);
+      const pulse2 = 0.3 * Math.sin(2 * Math.PI * 3.0 * t) * (t >= 3 && t < 8 ? 1 : 0);
+      acc[i] = (noise * 0.5 + pulse1 + pulse2) * env;
+    }
+
+    // Scale to target PGA
+    const maxAbs = Math.max(...acc.map(Math.abs));
+    const scale = PGA / (maxAbs * 9.81);
+    for (let i = 0; i < n; i++) {
+      acc[i] *= scale; // Now in m/s²
+    }
+
+    return acc;
+  }
+}
+
+// ===================================================================
+// NUMERICAL METHODS
+// ===================================================================
+class NumMethods {
+  // Runge-Kutta 4th order for system of first-order ODEs:
+  // dy/dt = f(t, y) where y is state vector [x, v]
+  static rk4(f, y0, tSpan, dt) {
+    const n = Math.floor((tSpan[1] - tSpan[0]) / dt) + 1;
+    const dim = y0.length;
+    const result = new Array(n);
+    result[0] = { t: tSpan[0], y: y0.slice() };
+
+    for (let i = 0; i < n - 1; i++) {
+      const t = result[i].t;
+      const y = result[i].y;
+
+      const k1 = f(t, y).map(v => dt * v);
+      const y2 = y.map((v, j) => v + 0.5 * k1[j]);
+      const k2 = f(t + 0.5 * dt, y2).map(v => dt * v);
+      const y3 = y.map((v, j) => v + 0.5 * k2[j]);
+      const k3 = f(t + 0.5 * dt, y3).map(v => dt * v);
+      const y4 = y.map((v, j) => v + k3[j]);
+      const k4 = f(t + dt, y4).map(v => dt * v);
+
+      const yNext = y.map((v, j) => v + (k1[j] + 2 * k2[j] + 2 * k3[j] + k4[j]) / 6);
+      result[i + 1] = { t: t + dt, y: yNext };
+    }
+    return result;
+  }
+
+  // Newmark-beta method (average acceleration, β=0.25, γ=0.5)
+  // Solves: m*a + c*v + k*x = F(t)
+  static newmarkBeta(m, c, k, forceFunc, dt, tEnd, x0, v0) {
+    const beta = 0.25, gamma = 0.5;
+    const n = Math.floor(tEnd / dt) + 1;
+    const t = new Array(n);
+    const x = new Array(n), v = new Array(n), a = new Array(n);
+
+    t[0] = 0; x[0] = x0; v[0] = v0;
+    a[0] = (forceFunc(0) - c * v[0] - k * x[0]) / m;
+
+    const a1 = m / (beta * dt * dt) + gamma * c / (beta * dt);
+    const a2 = m / (beta * dt) + c * (gamma / beta - 1);
+    const a3 = m * (0.5 / beta - 1) + c * dt * (0.5 * gamma / beta - 1);
+
+    const kEff = k + a1;
+
+    for (let i = 0; i < n - 1; i++) {
+      const fEff = forceFunc(t[i] + dt) + a1 * x[i] + a2 * v[i] + a3 * a[i];
+      x[i + 1] = fEff / kEff;
+      v[i + 1] = gamma / (beta * dt) * (x[i + 1] - x[i]) + (1 - gamma / beta) * v[i] + dt * (1 - 0.5 * gamma / beta) * a[i];
+      a[i + 1] = (forceFunc(t[i] + dt) - c * v[i + 1] - k * x[i + 1]) / m;
+      t[i + 1] = t[i] + dt;
+    }
+    return { t, x, v, a };
+  }
+
+  // Jacobi eigenvalue algorithm for symmetric matrices
+  // Returns eigenvalues sorted ascending and corresponding eigenvectors
+  static jacobiEigen(A, maxIter = 100, tol = 1e-10) {
+    const n = A.length;
+    // Initialize eigenvectors as identity matrix
+    const V = [];
+    for (let i = 0; i < n; i++) {
+      V[i] = new Array(n).fill(0);
+      V[i][i] = 1;
+    }
+    const a = A.map(row => row.slice());
+
+    for (let iter = 0; iter < maxIter; iter++) {
+      // Find largest off-diagonal element
+      let maxVal = 0, p = 0, q = 1;
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          if (Math.abs(a[i][j]) > maxVal) {
+            maxVal = Math.abs(a[i][j]);
+            p = i; q = j;
+          }
+        }
+      }
+      if (maxVal < tol) break;
+
+      // Compute rotation angle
+      const theta = 0.5 * Math.atan2(2 * a[p][q], a[p][p] - a[q][q]);
+      const c = Math.cos(theta), s = Math.sin(theta);
+
+      // Apply rotation
+      const app = a[p][p], aqq = a[q][q];
+      a[p][p] = c * c * app - 2 * s * c * a[p][q] + s * s * aqq;
+      a[q][q] = s * s * app + 2 * s * c * a[p][q] + c * c * aqq;
+      a[p][q] = a[q][p] = 0;
+
+      for (let j = 0; j < n; j++) {
+        if (j !== p && j !== q) {
+          const apj = a[p][j], aqj = a[q][j];
+          a[p][j] = a[j][p] = c * apj - s * aqj;
+          a[q][j] = a[j][q] = s * apj + c * aqj;
+        }
+      }
+
+      // Update eigenvectors
+      for (let i = 0; i < n; i++) {
+        const vip = V[i][p], viq = V[i][q];
+        V[i][p] = c * vip - s * viq;
+        V[i][q] = s * vip + c * viq;
+      }
+    }
+
+    // Extract eigenvalues
+    const eigenvals = [];
+    for (let i = 0; i < n; i++) eigenvals.push(a[i][i]);
+
+    // Sort by eigenvalue ascending
+    const indices = eigenvals.map((v, i) => i);
+    indices.sort((a, b) => eigenvals[a] - eigenvals[b]);
+
+    const sortedVals = indices.map(i => eigenvals[i]);
+    const sortedVecs = [];
+    for (let i = 0; i < n; i++) {
+      sortedVecs.push(indices.map(j => V[i][j]));
+    }
+
+    // Transpose so that sortedVecs[j] gives j-th eigenvector
+    const eigvecs = [];
+    for (let j = 0; j < n; j++) {
+      eigvecs[j] = [];
+      for (let i = 0; i < n; i++) {
+        eigvecs[j][i] = sortedVecs[i][j];
+      }
+    }
+
+    return { values: sortedVals, vectors: eigvecs };
+  }
+
+  // Solve generalized eigenvalue problem K*x = lambda*M*x
+  // Via Cholesky decomposition of M, transform to standard form
+  static generalizedEigen(K, M) {
+    const n = K.length;
+    // Cholesky decomposition M = L*L^T
+    const L = [];
+    for (let i = 0; i < n; i++) L[i] = new Array(n).fill(0);
+
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j <= i; j++) {
+        let sum = M[i][j];
+        for (let k = 0; k < j; k++) sum -= L[i][k] * L[j][k];
+        if (i === j) {
+          L[i][j] = Math.sqrt(sum);
+        } else {
+          L[i][j] = sum / L[j][j];
+        }
+      }
+    }
+
+    // Invert L (lower triangular)
+    const Linv = [];
+    for (let i = 0; i < n; i++) Linv[i] = new Array(n).fill(0);
+    for (let i = 0; i < n; i++) {
+      Linv[i][i] = 1 / L[i][i];
+      for (let j = 0; j < i; j++) {
+        let sum = 0;
+        for (let k = j; k < i; k++) sum += L[i][k] * Linv[k][j];
+        Linv[i][j] = -sum / L[i][i];
+      }
+    }
+
+    // Linv^T = transpose of Linv
+    const LinvT = [];
+    for (let i = 0; i < n; i++) {
+      LinvT[i] = [];
+      for (let j = 0; j < n; j++) LinvT[i][j] = Linv[j][i];
+    }
+
+    // A = Linv * K * LinvT
+    const temp = this.matMul(Linv, K);
+    const A = this.matMul(temp, LinvT);
+
+    // Solve standard eigenvalue problem
+    const eigResult = this.jacobiEigen(A);
+
+    // Transform eigenvectors back: phi = LinvT * y (columns of y are eigenvectors of A)
+    const vecsTransformed = [];
+    for (let j = 0; j < n; j++) {
+      const y = eigResult.vectors[j];
+      vecsTransformed[j] = new Array(n).fill(0);
+      for (let i = 0; i < n; i++) {
+        let sum = 0;
+        for (let k = 0; k < n; k++) sum += LinvT[i][k] * y[k];
+        vecsTransformed[j][i] = sum;
+      }
+    }
+
+    return { values: eigResult.values, vectors: vecsTransformed };
+  }
+
+  static matMul(A, B) {
+    const rows = A.length, cols = B[0].length, inner = B.length;
+    const C = [];
+    for (let i = 0; i < rows; i++) {
+      C[i] = [];
+      for (let j = 0; j < cols; j++) {
+        let sum = 0;
+        for (let k = 0; k < inner; k++) sum += A[i][k] * B[k][j];
+        C[i][j] = sum;
+      }
+    }
+    return C;
+  }
+
+  static matVecMul(A, v) {
+    const n = A.length;
+    const result = new Array(n).fill(0);
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) result[i] += A[i][j] * v[j];
+    }
+    return result;
+  }
+}
+
+// ===================================================================
+// SEISMIC CODE: Response Spectrum (GB 50011-2010)
+// ===================================================================
+class SeismicCode {
+  // Get alpha_max based on seismic intensity
+  static getAlphaMax(intensity) {
+    const map = { '7': 0.08, '7.5': 0.12, '8': 0.16, '8.5': 0.24, '9': 0.32 };
+    return map[intensity] || 0.08;
+  }
+
+  // Get Tg (characteristic period) based on site class and earthquake group
+  static getTg(siteClass, group) {
+    const table = {
+      'I0':  [0.20, 0.25, 0.30],
+      'I1':  [0.25, 0.30, 0.35],
+      'II':  [0.35, 0.40, 0.45],
+      'III': [0.45, 0.55, 0.65],
+      'IV':  [0.65, 0.75, 0.90]
+    };
+    return table[siteClass][group - 1];
+  }
+
+  // Seismic influence coefficient α(T)
+  static alpha(T, alphaMax, Tg, zeta = 0.05) {
+    // Damping adjustment factors
+    const gamma = 0.9 + (0.05 - zeta) / (0.3 + 6 * zeta);
+    const eta1 = 0.02 + (0.05 - zeta) / (4 + 32 * zeta);
+    if (eta1 < 0) throw new Error('eta1 must be >= 0');
+    const eta2 = 1 + (0.05 - zeta) / (0.08 + 1.6 * zeta);
+    if (eta2 < 0.55) throw new Error('eta2 must be >= 0.55');
+
+    const T0 = 0.1; // usually 0.1s
+
+    if (T < 0) return 0;
+    if (T <= T0) {
+      // Linear rise
+      return (0.45 * alphaMax + (eta2 * alphaMax - 0.45 * alphaMax) * (T / T0));
+    } else if (T <= Tg) {
+      // Plateau
+      return eta2 * alphaMax;
+    } else if (T <= 5 * Tg) {
+      // Curved descent
+      return Math.pow(Tg / T, gamma) * eta2 * alphaMax;
+    } else if (T <= 6.0) {
+      // Linear descent
+      return (eta2 * Math.pow(0.2, gamma) - eta1 * (T - 5 * Tg)) * alphaMax;
+    }
+    return 0;
+  }
+
+  // SRSS combination
+  static srss(values) {
+    return Math.sqrt(values.reduce((sum, v) => sum + v * v, 0));
+  }
+
+  // CQC combination
+  static cqc(r_i, r_j, periods, zeta = 0.05) {
+    // r_i, r_j are modal response arrays: each mode has response per DOF
+    const nModes = r_i.length;
+    const nDOF = r_i[0].length;
+    const result = new Array(nDOF).fill(0);
+
+    for (let i = 0; i < nDOF; i++) {
+      let sum = 0;
+      for (let m = 0; m < nModes; m++) {
+        for (let n = 0; n < nModes; n++) {
+          const r = periods[n] / periods[m];
+          const rho_ij = (8 * zeta * zeta * (1 + r) * Math.pow(r, 1.5))
+            / ((1 - r * r) * (1 - r * r) + 4 * zeta * zeta * r * (1 + r) * (1 + r));
+          sum += rho_ij * r_i[m][i] * r_j[n][i];
+        }
+      }
+      result[i] = Math.sqrt(Math.max(0, sum));
+    }
+    return result;
+  }
+}
+
+// ===================================================================
+// VUE APPLICATION
+// ===================================================================
+const { createApp } = Vue;
+
+createApp({
+data() {
+  return {
+    currentTab: 'structure',
+    allComputed: false,
+
+    // Structure parameters
+    structure: {
+      nStories: 5,
+      nBays: 3,
+      hFirst: 4.5,
+      hTypical: 3.3,
+      spanWidth: 6.0,
+      concreteGrade: 30,
+      E: 30000, // MPa
+      deadLoad: 5.0, // kN/m²
+      liveLoad: 2.0, // kN/m²
+      floors: []
+    },
+
+    // SDOF parameters
+    sdofParams: { m: 200, k: 50000, zeta: 0.05, PGA: 200, dt: 0.005, tEnd: 20 },
+    sdofComputed: false,
+    sdofResult: null,
+
+    // MDOF parameters
+    mdofParams: { zeta: 0.05, PGA: 200, nModes: 3, mtEnd: 20, mdt: 0.01 },
+    mdofComputed: false,
+    mdofResult: null,
+
+    // Spectrum parameters
+    spectrumParams: { intensity: '8', earthquakeGroup: 1, siteClass: 'II',
+      alphaMax: 0.16, Tg: 0.35, zeta: 0.05, combineMethod: 'SRSS' },
+    spectrumComputed: false,
+    spectrumResult: null,
+
+    // Base shear parameters
+    bsParams: { intensity: '8', siteClass: 'II', earthquakeGroup: 1,
+      alphaMax: 0.16, Tg: 0.35, T1: 0.5 },
+    baseshearComputed: false,
+    baseshearResult: null,
+
+    // Chart instances
+    charts: {},
+    konvaStage: null,
+    _handleResize: null
+  };
+},
+
+computed: {
+  totalHeight() {
+    return this.structure.floors.reduce((sum, f) => sum + f.height, 0);
+  },
+  totalMass() {
+    return this.structure.floors.reduce((sum, f) => sum + f.mass, 0);
+  },
+  sdofDerived() {
+    const { m, k, zeta } = this.sdofParams;
+    const omega = Math.sqrt(k / m);
+    const T = 2 * Math.PI / omega;
+    const f = 1 / T;
+    const c = 2 * zeta * Math.sqrt(m * k);
+    return { omega, T, f, c };
+  }
+},
+
+watch: {
+  'structure.concreteGrade'(val) {
+    this.structure.E = val * 1000; // Approximate: C30 -> 30000 MPa
+    this.updateFloorProperties();
+  },
+  'structure.nStories'() { this.onStructureChange(); },
+  'structure.nBays'() { this.onStructureChange(); },
+  currentTab(val) {
+    this.$nextTick(() => {
+      if (val === 'structure') this.drawFrameCanvas();
+      if (val === 'sdof' && this.sdofComputed) this.drawSDOFCharts();
+      if (val === 'mdof' && this.mdofComputed) this.drawMDOFCharts();
+      if (val === 'spectrum' && this.spectrumComputed) this.drawSpectrumCharts();
+      if (val === 'baseshear' && this.baseshearComputed) this.drawBSCharts();
+    });
+  }
+},
+
+mounted() {
+  this.onStructureChange();
+  this.drawFrameCanvas();
+  // Resize handlers
+  window.addEventListener('resize', this._handleResize);
+  this._handleResize = () => {
+    // Resize ECharts
+    Object.values(this.charts).forEach(c => { try { c.resize(); } catch(e) {} });
+    // Resize Konva
+    this.drawFrameCanvas();
+  };
+},
+
+beforeUnmount() {
+  window.removeEventListener('resize', this._handleResize);
+  if (this.konvaStage) this.konvaStage.destroy();
+  Object.values(this.charts).forEach(c => { try { c.dispose(); } catch(e) {} });
+},
+
+methods: {
+  // ==================== STRUCTURE ====================
+  onStructureChange() {
+    this.allComputed = false;
+    this.sdofComputed = false;
+    this.mdofComputed = false;
+    this.spectrumComputed = false;
+    this.baseshearComputed = false;
+    this.structure.E = this.structure.concreteGrade * 1000;
+    this.buildFloors();
+    if (this.mdofResult && this.mdofResult.periods) {
+      this.bsParams.T1 = this.mdofResult.periods[0];
+    }
+  },
+
+  buildFloors() {
+    const n = this.structure.nStories;
+    this.structure.floors = [];
+    for (let i = 0; i < n; i++) {
+      this.structure.floors.push({
+        height: i === 0 ? this.structure.hFirst : this.structure.hTypical,
+        colB: 500, colH: 500, nCols: (this.structure.nBays + 1) * 2,
+        beamB: 300, beamH: 600,
+        mass: 0, stiffness: 0
+      });
+    }
+    this.updateFloorProperties();
+  },
+
+  updateFloorProperties() {
+    const E = this.structure.E * 1e3; // MPa -> kN/m²
+    const g = 9.81;
+    const floorArea = this.structure.spanWidth * this.structure.nBays * this.structure.spanWidth; // simplified
+    const massPerArea = (this.structure.deadLoad + 0.5 * this.structure.liveLoad);
+
+    for (let i = 0; i < this.structure.floors.length; i++) {
+      const f = this.structure.floors[i];
+      // Mass
+      f.mass = massPerArea * floorArea / g;
+      // Stiffness: k = 12EI/h³ per column
+      const I = (f.colB / 1000) * Math.pow(f.colH / 1000, 3) / 12; // m⁴
+      f.stiffness = f.nCols * 12 * E * I / Math.pow(f.height, 3); // kN/m
+    }
+    this.allComputed = false;
+    this.$nextTick(() => this.drawFrameCanvas());
+  },
+
+  // ==================== KONVA FRAME VISUALIZATION ====================
+  drawFrameCanvas() {
+    const container = document.getElementById('frameCanvas');
+    if (!container) return;
+    // Clean up previous stage
+    if (this.konvaStage) { this.konvaStage.destroy(); this.konvaStage = null; }
+
+    const width = container.clientWidth || 600;
+    const height = container.clientHeight || 450;
+    const stage = new Konva.Stage({ container: 'frameCanvas', width, height });
+    this.konvaStage = stage;
+    const layer = new Konva.Layer();
+    stage.add(layer);
+
+    const nFloors = this.structure.floors.length;
+    const nBays = this.structure.nBays;
+    if (nFloors === 0) { layer.draw(); return; }
+
+    // Scale factors
+    const totalH = this.totalHeight;
+    const totalW = nBays * this.structure.spanWidth;
+    const margin = { top: 30, bottom: 50, left: 80, right: 40 };
+    const plotW = width - margin.left - margin.right;
+    const plotH = height - margin.top - margin.bottom;
+    const sx = plotW / totalW;  // m -> px
+    const sy = plotH / totalH;
+
+    function toX(m) { return margin.left + m * sx; }
+    function toY(m) { return margin.top + (totalH - m) * sy; }
+
+    // Column positions
+    const colXs = [];
+    for (let b = 0; b <= nBays; b++) colXs.push(toX(b * this.structure.spanWidth));
+
+    // Floor elevations
+    const floorYs = [];
+    let cumH = 0;
+    for (let i = 0; i < nFloors; i++) {
+      cumH += this.structure.floors[i].height;
+      floorYs.push(toY(cumH));
+    }
+
+    // Ground line
+    const groundY = toY(0);
+    layer.add(new Konva.Line({
+      points: [margin.left - 15, groundY, toX(totalW) + 15, groundY],
+      stroke: '#666', strokeWidth: 3, dash: [8, 4]
+    }));
+    // Ground hatching
+    for (let i = 0; i < (toX(totalW) - margin.left + 30) / 15; i++) {
+      const gx = margin.left - 15 + i * 15;
+      layer.add(new Konva.Line({
+        points: [gx, groundY, gx - 5, groundY + 12, gx + 5, groundY + 12],
+        stroke: '#999', strokeWidth: 1
+      }));
+    }
+    // Ground label
+    layer.add(new Konva.Text({
+      x: margin.left - 75, y: groundY - 8,
+      text: '±0.000', fontSize: 11, fill: '#666'
+    }));
+
+    // Draw columns
+    for (let f = 0; f < nFloors; f++) {
+      const yBot = f === 0 ? groundY : floorYs[f - 1];
+      const yTop = floorYs[f];
+      const cw = (this.structure.floors[f].colB / 1000) * sx; // scaled column width
+      for (let b = 0; b <= nBays; b++) {
+        const cx = colXs[b];
+        layer.add(new Konva.Rect({
+          x: cx - cw / 2, y: yTop, width: cw, height: yBot - yTop,
+          fill: '#4a90d9', stroke: '#2d6aa0', strokeWidth: 1,
+          cornerRadius: 1
+        }));
+      }
+    }
+
+    // Draw beams
+    for (let f = 0; f < nFloors; f++) {
+      const y = floorYs[f];
+      const bh = (this.structure.floors[f].beamH / 1000) * sy;
+      for (let b = 0; b < nBays; b++) {
+        const x1 = colXs[b], x2 = colXs[b + 1];
+        layer.add(new Konva.Rect({
+          x: x1, y: y - bh, width: x2 - x1, height: bh,
+          fill: '#e0e0e0', stroke: '#bbb', strokeWidth: 1
+        }));
+      }
+    }
+
+    // Floor slabs
+    for (let f = 0; f < nFloors; f++) {
+      const y = floorYs[f];
+      layer.add(new Konva.Line({
+        points: [colXs[0], y, colXs[nBays], y],
+        stroke: '#ccc', strokeWidth: 2, dash: [4, 2]
+      }));
+    }
+
+    // Floor labels
+    for (let f = 0; f < nFloors; f++) {
+      const y = floorYs[f];
+      const h = this.structure.floors[f].height;
+      const midY = f === 0 ? (y + groundY) / 2 : (y + floorYs[f - 1]) / 2;
+      layer.add(new Konva.Text({
+        x: colXs[nBays] + 8, y: midY - 8,
+        text: `${h.toFixed(1)}m`, fontSize: 11, fill: '#666'
+      }));
+      layer.add(new Konva.Text({
+        x: margin.left - 70, y: y - 8,
+        text: `F${f + 1}`, fontSize: 11, fill: '#333', fontStyle: 'bold'
+      }));
+    }
+
+    // Mass indicators (circles at floor levels)
+    for (let f = 0; f < nFloors; f++) {
+      const y = floorYs[f];
+      const radius = 6 + (this.structure.floors[f].mass / Math.max(...this.structure.floors.map(fl => fl.mass))) * 10;
+      layer.add(new Konva.Circle({
+        x: colXs[Math.floor(nBays / 2)], y: y - 5,
+        radius, fill: 'rgba(240,68,56,0.3)', stroke: '#f04438', strokeWidth: 1
+      }));
+    }
+
+    // Base fixity symbols
+    for (let b = 0; b <= nBays; b++) {
+      const cx = colXs[b];
+      layer.add(new Konva.Line({
+        points: [cx - 6, groundY + 5, cx + 6, groundY + 5,
+                 cx - 3, groundY + 8, cx + 3, groundY + 8],
+        stroke: '#666', strokeWidth: 1.5
+      }));
+    }
+
+    // Dimension lines
+    // Width
+    const dimY = groundY + 30;
+    layer.add(new Konva.Line({
+      points: [colXs[0], dimY, colXs[nBays], dimY],
+      stroke: '#999', strokeWidth: 1
+    }));
+    layer.add(new Konva.Line({
+      points: [colXs[0], dimY - 4, colXs[0], dimY + 4],
+      stroke: '#999', strokeWidth: 1
+    }));
+    layer.add(new Konva.Line({
+      points: [colXs[nBays], dimY - 4, colXs[nBays], dimY + 4],
+      stroke: '#999', strokeWidth: 1
+    }));
+    layer.add(new Konva.Text({
+      x: (colXs[0] + colXs[nBays]) / 2 - 30, y: dimY - 18,
+      text: `${totalW.toFixed(1)}m × ${nBays}跨`, fontSize: 11, fill: '#666'
+    }));
+
+    layer.draw();
+  },
+
+  resetStructure() {
+    Object.assign(this.structure, {
+      nStories: 5, nBays: 3, hFirst: 4.5, hTypical: 3.3,
+      spanWidth: 6.0, concreteGrade: 30, E: 30000, deadLoad: 5.0, liveLoad: 2.0
+    });
+    this.structure.floors = [];
+    this.onStructureChange();
+  },
+
+  computeAll() {
+    this.computeSDOF();
+    this.computeMDOF();
+    this.updateSpectrumParams();
+    this.computeResponseSpectrum();
+    this.bsParams.T1 = this.mdofResult.periods[0];
+    this.updateBSParams();
+    this.computeBaseShear();
+    this.allComputed = true;
+    this.currentTab = 'structure';
+  },
+
+  // ==================== SDOF ====================
+  computeSDOF() {
+    const { m, k, zeta, PGA, dt, tEnd } = this.sdofParams;
+    const omega = Math.sqrt(k / m);
+    const c_val = 2 * zeta * Math.sqrt(m * k);
+    const g = 9.81;
+
+    // Generate ground motion
+    const gm = SeismicGroundMotion.generateElCentroLike(dt, tEnd, PGA);
+
+    // ODE function for RK4: dy/dt = [v, a_g(t) - c/m*v - k/m*x]
+    const f = (t, y) => {
+      const idx = Math.min(Math.floor(t / dt), gm.length - 1);
+      const ag = gm[idx];
+      return [y[1], -ag - (c_val / m) * y[1] - (k / m) * y[0]];
+    };
+
+    const rk4Result = NumMethods.rk4(f, [0, 0], [0, tEnd], dt);
+    const nbResult = NumMethods.newmarkBeta(m, c_val, k,
+      (t) => -m * gm[Math.min(Math.floor(t / dt), gm.length - 1)],
+      dt, tEnd, 0, 0);
+
+    const rk4_x = rk4Result.map(r => r.y[0] * 1000); // mm
+    const rk4_v = rk4Result.map(r => r.y[1]);
+    const rk4_a = [];
+    for (let i = 0; i < rk4Result.length; i++) {
+      const idx = Math.min(Math.floor(rk4Result[i].t / dt), gm.length - 1);
+      rk4_a.push(-gm[idx] - (c_val / m) * rk4Result[i].y[1] - (k / m) * rk4Result[i].y[0]);
+    }
+
+    this.sdofResult = {
+      gm: gm,
+      gmTime: Array.from({ length: gm.length }, (_, i) => i * dt),
+      rk4: {
+        t: rk4Result.map(r => r.t),
+        x: rk4_x, v: rk4_v, a: rk4_a,
+        maxDisp: Math.max(...rk4_x.map(Math.abs)),
+        maxVel: Math.max(...rk4_v.map(Math.abs)),
+        maxAcc: Math.max(...rk4_a.map(Math.abs)),
+        maxBaseShear: k * Math.max(...rk4_x.map(Math.abs)) / 1000
+      },
+      newmark: {
+        t: nbResult.t,
+        x: nbResult.x.map(v => v * 1000),
+        v: nbResult.v,
+        a: nbResult.a,
+        maxDisp: Math.max(...nbResult.x.map(v => Math.abs(v * 1000))),
+        maxVel: Math.max(...nbResult.v.map(Math.abs)),
+        maxAcc: Math.max(...nbResult.a.map(Math.abs)),
+        maxBaseShear: k * Math.max(...nbResult.x.map(Math.abs)) / 1000
+      }
+    };
+
+    this.sdofComputed = true;
+    this.$nextTick(() => this.drawSDOFCharts());
+  },
+
+  drawSDOFCharts() {
+    if (!this.sdofResult) return;
+    const r = this.sdofResult;
+
+    // Displacement comparison chart — show both with own time arrays
+    const dispDom = document.getElementById('sdofDispChart');
+    if (dispDom) {
+      let chart = this.charts['sdofDisp'];
+      if (!chart) { chart = echarts.init(dispDom); this.charts['sdofDisp'] = chart; }
+      const stepRk4 = Math.max(1, Math.floor(r.rk4.t.length / 2000));
+      const stepNm = Math.max(1, Math.floor(r.newmark.t.length / 2000));
+      const rk4Data = r.rk4.t.filter((_, i) => i % stepRk4 === 0)
+        .map((t, i) => [t, r.rk4.x[i * stepRk4]]);
+      const nmData = r.newmark.t.filter((_, i) => i % stepNm === 0)
+        .map((t, i) => [t, r.newmark.x[i * stepNm]]);
+      chart.setOption({
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['RK4', 'Newmark-β'] },
+        xAxis: { type: 'value', name: 'Time (s)', min: 0, max: r.rk4.t[r.rk4.t.length - 1] },
+        yAxis: { type: 'value', name: 'Displacement (mm)' },
+        dataZoom: [{ type: 'inside' }, { type: 'slider' }],
+        series: [
+          { name: 'RK4', type: 'line', data: rk4Data, smooth: true, lineStyle: { width: 1.5 }, showSymbol: false, symbol: 'none' },
+          { name: 'Newmark-β', type: 'line', data: nmData, smooth: true, lineStyle: { width: 1.5, type: 'dashed' }, showSymbol: false, symbol: 'none' }
+        ]
+      }, true);
+    }
+
+    // Phase portrait
+    const phaseDom = document.getElementById('sdofPhaseChart');
+    if (phaseDom) {
+      let chart = this.charts['sdofPhase'];
+      if (!chart) chart = echarts.init(phaseDom), this.charts['sdofPhase'] = chart;
+      const step2 = Math.max(1, Math.floor(r.rk4.x.length / 500));
+      const xs = r.rk4.x.filter((_, i) => i % step2 === 0);
+      const vs = r.rk4.v.filter((_, i) => i % step2 === 0);
+      chart.setOption({
+        tooltip: { trigger: 'axis' },
+        title: { text: '相图 (Phase Portrait) - RK4', left: 'center', textStyle: { fontSize: 13 } },
+        xAxis: { type: 'value', name: 'Displacement (mm)' },
+        yAxis: { type: 'value', name: 'Velocity (m/s)' },
+        series: [{
+          type: 'line', data: xs.map((v, i) => [v, vs[i]]),
+          lineStyle: { color: '#1a73e8', width: 1 }, showSymbol: false
+        }]
+      }, true);
+    }
+  },
+
+  // ==================== MDOF ====================
+  computeMDOF() {
+    const n = this.structure.floors.length;
+    if (n === 0) return;
+
+    // Assemble mass matrix (diagonal, lumped)
+    const M = [];
+    for (let i = 0; i < n; i++) {
+      M[i] = new Array(n).fill(0);
+      M[i][i] = this.structure.floors[i].mass;
+    }
+
+    // Assemble stiffness matrix (tri-diagonal for shear frame)
+    const K = [];
+    for (let i = 0; i < n; i++) K[i] = new Array(n).fill(0);
+    for (let i = 0; i < n; i++) {
+      const k_i = this.structure.floors[i].stiffness;
+      K[i][i] += k_i;
+      if (i < n - 1) {
+        K[i][i] += this.structure.floors[i + 1].stiffness;
+        K[i][i + 1] = K[i + 1][i] = -this.structure.floors[i + 1].stiffness;
+      }
+    }
+
+    // Solve generalized eigenvalue problem
+    const eigResult = NumMethods.generalizedEigen(K, M);
+    const omegas = eigResult.values.map(v => Math.sqrt(v)); // ω² -> ω
+    const periods = omegas.map(w => 2 * Math.PI / w);
+    const freqs = omegas.map(w => w / (2 * Math.PI));
+
+    // Mode shapes (eigenvectors) - normalized to unit top displacement
+    const modeShapes = eigResult.vectors.map(vec => {
+      const scale = Math.abs(vec[n - 1]) > 1e-10 ? 1 / vec[n - 1] : 1;
+      return vec.map(v => v * scale);
+    });
+
+    // Modal mass participation factors
+    const massPart = modeShapes.map(phi => {
+      const num = phi.reduce((s, v, i) => s + v * M[i][i], 0);
+      const den = phi.reduce((s, v, i) => s + v * v * M[i][i], 0);
+      return num * num / (den * M.reduce((s, row, i) => s + row[i], 0));
+    });
+
+    // MDOF time history using modal superposition
+    const { zeta, PGA, nModes, mtEnd, mdt } = this.mdofParams;
+    const actualModes = Math.min(nModes, n);
+    const gm = SeismicGroundMotion.generateElCentroLike(mdt, mtEnd, PGA);
+    const nSteps = gm.length;
+
+    // Modal coordinates
+    const modalDisp = []; // [mode][step]
+    const modalVel = [];
+    for (let mode = 0; mode < actualModes; mode++) {
+      const omega_i = omegas[mode];
+      const phi = modeShapes[mode];
+      // Participation factor
+      const gamma = phi.reduce((s, v, i) => s + v * M[i][i], 0) / phi.reduce((s, v, i) => s + v * v * M[i][i], 0);
+      const m_i = 1 / Math.abs(phi.reduce((s, v, i) => s + v * v * M[i][i], 0)); // generalized mass inverse
+      const k_i = omega_i * omega_i / (m_i === 0 ? 1 : m_i); // effective
+      const c_i = 2 * zeta * omega_i;
+
+      // Solve modal equation using Newmark-beta
+      const forceFunc = (t) => {
+        const idx = Math.min(Math.floor(t / mdt), gm.length - 1);
+        return -gamma * gm[idx];
+      };
+      const nb = NumMethods.newmarkBeta(1, c_i, k_i, forceFunc, mdt, mtEnd, 0, 0);
+      modalDisp.push(nb.x);
+    }
+
+    // Convert back to physical coordinates
+    const topDispHistory = new Array(nSteps).fill(0);
+    const topDispTimes = Array.from({ length: nSteps }, (_, i) => i * mdt);
+
+    for (let step = 0; step < nSteps; step++) {
+      for (let mode = 0; mode < actualModes; mode++) {
+        if (modalDisp[mode][step] !== undefined) {
+          topDispHistory[step] += modeShapes[mode][n - 1] * modalDisp[mode][step] * 1000; // mm
+        }
+      }
+    }
+
+    // Max responses per floor from modal superposition
+    const maxDisp = new Array(n).fill(0);
+    const maxShear = new Array(n).fill(0);
+
+    for (let step = 0; step < nSteps; step++) {
+      const disp = new Array(n).fill(0);
+      for (let mode = 0; mode < actualModes; mode++) {
+        if (modalDisp[mode][step] !== undefined) {
+          for (let i = 0; i < n; i++) {
+            disp[i] += modeShapes[mode][i] * modalDisp[mode][step] * 1000;
+          }
+        }
+      }
+      for (let i = 0; i < n; i++) {
+        maxDisp[i] = Math.max(maxDisp[i], Math.abs(disp[i]));
+      }
+      // Shear at each floor
+      for (let i = 0; i < n; i++) {
+        let shear = 0;
+        for (let j = i; j < n; j++) {
+          const k_j = this.structure.floors[j].stiffness;
+          const relDisp = j < n - 1 ? (disp[j + 1] - disp[j]) / 1000 : disp[j] / 1000;
+          shear += k_j * relDisp;
+        }
+        maxShear[i] = Math.max(maxShear[i], Math.abs(shear));
+      }
+    }
+
+    this.mdofResult = {
+      omegas, periods, freqs, massPart, modeShapes,
+      topDispHistory, topDispTimes, maxDisp, maxShear,
+      K, M
+    };
+
+    this.mdofComputed = true;
+    // Set T1 from MDOF
+    if (periods.length > 0) this.bsParams.T1 = periods[0];
+    this.$nextTick(() => this.drawMDOFCharts());
+  },
+
+  drawMDOFCharts() {
+    if (!this.mdofResult) return;
+    const r = this.mdofResult;
+    const n = r.periods.length;
+
+    // Mode shapes
+    const modeDom = document.getElementById('modeShapeChart');
+    if (modeDom) {
+      let chart = this.charts['modeShape'];
+      if (!chart) chart = echarts.init(modeDom), this.charts['modeShape'] = chart;
+      const floors = Array.from({ length: n }, (_, i) => i + 1);
+      const colors = ['#1a73e8', '#f79009', '#12b76a', '#f04438', '#875bf7'];
+      const series = [];
+      for (let i = 0; i < Math.min(n, 5); i++) {
+        series.push({
+          name: `模态 ${i + 1} (T=${r.periods[i].toFixed(3)}s)`,
+          type: 'line', data: r.modeShapes[i].map((v, j) => [floors[j], v]),
+          lineStyle: { color: colors[i] }, symbol: 'circle', symbolSize: 8
+        });
+      }
+      chart.setOption({
+        tooltip: { trigger: 'axis' },
+        legend: { data: series.map(s => s.name), bottom: 0 },
+        xAxis: { type: 'value', name: '楼层', min: 1, max: n, interval: 1 },
+        yAxis: { type: 'value', name: '振型值 (归一化)' },
+        series
+      }, true);
+    }
+
+    // Top displacement history
+    const dispDom = document.getElementById('mdofDispChart');
+    if (dispDom) {
+      let chart = this.charts['mdofDisp'];
+      if (!chart) chart = echarts.init(dispDom), this.charts['mdofDisp'] = chart;
+      const step = Math.max(1, Math.floor(r.topDispTimes.length / 2000));
+      const t = r.topDispTimes.filter((_, i) => i % step === 0);
+      const d = r.topDispHistory.filter((_, i) => i % step === 0);
+      chart.setOption({
+        tooltip: { trigger: 'axis' },
+        title: { text: '顶层位移时程', left: 'center', textStyle: { fontSize: 13 } },
+        xAxis: { type: 'value', name: 'Time (s)' },
+        yAxis: { type: 'value', name: 'Displacement (mm)' },
+        dataZoom: [{ type: 'inside' }, { type: 'slider' }],
+        series: [{
+          type: 'line', data: t.map((v, i) => [v, d[i]]),
+          lineStyle: { width: 1.5, color: '#f04438' }, showSymbol: false,
+          areaStyle: { color: 'rgba(240,68,56,0.1)' }
+        }]
+      }, true);
+    }
+
+    // Max responses
+    const maxDom = document.getElementById('mdofMaxChart');
+    if (maxDom) {
+      let chart = this.charts['mdofMax'];
+      if (!chart) chart = echarts.init(maxDom), this.charts['mdofMax'] = chart;
+      const floors = Array.from({ length: n }, (_, i) => n - i);
+      chart.setOption({
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['最大位移 (mm)', '最大层间剪力 (kN)'] },
+        grid: [
+          { left: '10%', right: '55%', top: 40, bottom: 30 },
+          { left: '55%', right: '10%', top: 40, bottom: 30 }
+        ],
+        xAxis: [
+          { type: 'value', name: '位移 (mm)', gridIndex: 0 },
+          { type: 'value', name: '剪力 (kN)', gridIndex: 1 }
+        ],
+        yAxis: [
+          { type: 'category', data: floors.map(f => `F${f}`), gridIndex: 0, inverse: true },
+          { type: 'category', data: floors.map(f => `F${f}`), gridIndex: 1, inverse: true,
+            axisLabel: { show: false } }
+        ],
+        series: [
+          { name: '最大位移 (mm)', type: 'bar', data: r.maxDisp.map((v, i) => [v, n - i]),
+            xAxisIndex: 0, yAxisIndex: 0, itemStyle: { color: '#1a73e8' }, barMaxWidth: 25 },
+          { name: '最大层间剪力 (kN)', type: 'bar', data: r.maxShear.map((v, i) => [v / 1e3, n - i]),
+            xAxisIndex: 1, yAxisIndex: 1, itemStyle: { color: '#f79009' }, barMaxWidth: 25 }
+        ]
+      }, true);
+    }
+  },
+
+  // ==================== RESPONSE SPECTRUM ====================
+  updateSpectrumParams() {
+    this.spectrumParams.alphaMax = SeismicCode.getAlphaMax(this.spectrumParams.intensity);
+    this.spectrumParams.Tg = SeismicCode.getTg(this.spectrumParams.siteClass, this.spectrumParams.earthquakeGroup);
+  },
+
+  computeResponseSpectrum() {
+    this.updateSpectrumParams();
+    // Ensure MDOF result exists
+    if (!this.mdofComputed) this.computeMDOF();
+
+    const { alphaMax, Tg, zeta, combineMethod } = this.spectrumParams;
+    const n = this.structure.floors.length;
+    const modes = Math.min(this.mdofParams.nModes, n);
+    const periods = this.mdofResult.periods.slice(0, modes);
+    const modeShapes = this.mdofResult.modeShapes.slice(0, modes);
+    const M = this.mdofResult.M;
+    const K = this.mdofResult.K;
+    const g = 9.81;
+
+    // Generate spectrum curve for plotting
+    const spectrumT = [];
+    const spectrumAlpha = [];
+    for (let i = 0; i <= 600; i++) {
+      const T = i * 0.01;
+      spectrumT.push(T);
+      spectrumAlpha.push(SeismicCode.alpha(T, alphaMax, Tg, zeta));
+    }
+
+    // Modal analysis
+    const modalResults = [];
+    const allModalForces = []; // [mode][floor] floor seismic force
+    const allModalDisps = []; // [mode][floor]
+    const allModalShears = []; // [mode][floor]
+
+    for (let mode = 0; mode < modes; mode++) {
+      const T = periods[mode];
+      const phi = modeShapes[mode];
+      const alpha = SeismicCode.alpha(T, alphaMax, Tg, zeta);
+
+      // Participation factor
+      const num_gamma = phi.reduce((s, v, i) => s + v * M[i][i], 0);
+      const den_gamma = phi.reduce((s, v, i) => s + v * v * M[i][i], 0);
+      const gamma = num_gamma / den_gamma;
+
+      // Effective mass
+      const effectiveMass = num_gamma * num_gamma / den_gamma;
+
+      // Modal base shear
+      const baseShear = alpha * effectiveMass * g;
+
+      // Floor seismic forces: F_ji = alpha * gamma_j * X_ji * G_i
+      const floorForces = [];
+      for (let i = 0; i < n; i++) {
+        const Gi = M[i][i] * g;
+        floorForces.push(alpha * gamma * phi[i] * Gi);
+      }
+
+      // Modal displacements
+      const modalDisps = phi.map(v => gamma * v * alpha * g / (Math.pow(2 * Math.PI / T, 2)) * 1000); // mm
+
+      // Modal story shears
+      const storyShears = [];
+      for (let i = 0; i < n; i++) {
+        let shear = 0;
+        for (let j = i; j < n; j++) shear += floorForces[j];
+        storyShears.push(shear);
+      }
+
+      modalResults.push({ alpha, gamma, effectiveMass, baseShear, floorForces, modalDisps, storyShears });
+      allModalForces.push(floorForces);
+      allModalDisps.push(modalDisps);
+      allModalShears.push(storyShears);
+    }
+
+    // Combine modal results
+    const combinedForces = new Array(n).fill(0);
+    const combinedDisps = new Array(n).fill(0);
+    const combinedShears = new Array(n).fill(0);
+
+    if (combineMethod === 'SRSS') {
+      for (let i = 0; i < n; i++) {
+        combinedForces[i] = SeismicCode.srss(allModalForces.map(m => m[i]));
+        combinedDisps[i] = SeismicCode.srss(allModalDisps.map(m => m[i]));
+        combinedShears[i] = SeismicCode.srss(allModalShears.map(m => m[i]));
+      }
+    } else {
+      // CQC
+      const cqcForces = SeismicCode.cqc(allModalForces, allModalForces, periods, zeta);
+      const cqcDisps = SeismicCode.cqc(allModalDisps, allModalDisps, periods, zeta);
+      const cqcShears = SeismicCode.cqc(allModalShears, allModalShears, periods, zeta);
+      for (let i = 0; i < n; i++) {
+        combinedForces[i] = cqcForces[i];
+        combinedDisps[i] = cqcDisps[i];
+        combinedShears[i] = cqcShears[i];
+      }
+    }
+
+    // Story results (floor from top to bottom)
+    const storyResults = [];
+    const totalBaseShear = combinedShears[0];
+    for (let i = 0; i < n; i++) {
+      const flIdx = n - 1 - i; // top to bottom
+      const floorForce = combinedForces[flIdx];
+      const storyShear = combinedShears[flIdx];
+      const storyDrift = (flIdx === n - 1)
+        ? combinedDisps[flIdx]
+        : combinedDisps[flIdx] - combinedDisps[flIdx + 1];
+      const driftRatio = storyDrift > 0 ? this.structure.floors[flIdx].height * 1000 / storyDrift : Infinity;
+      storyResults.push({
+        floor: flIdx + 1,
+        height: this.structure.floors[flIdx].height,
+        floorForce, storyShear, storyDrift, driftRatio
+      });
+    }
+
+    this.spectrumResult = {
+      spectrumT, spectrumAlpha,
+      periods: periods,
+      modalResults,
+      allModalForces, allModalDisps, allModalShears,
+      combinedForces, combinedDisps, combinedShears,
+      storyResults, totalBaseShear
+    };
+
+    this.spectrumComputed = true;
+    this.$nextTick(() => this.drawSpectrumCharts());
+  },
+
+  drawSpectrumCharts() {
+    if (!this.spectrumResult) return;
+    const r = this.spectrumResult;
+    const n = this.structure.floors.length;
+    const { alphaMax, Tg, zeta } = this.spectrumParams;
+
+    // Spectrum curve
+    const specDom = document.getElementById('spectrumCurveChart');
+    if (specDom) {
+      let chart = this.charts['specCurve'];
+      if (!chart) chart = echarts.init(specDom), this.charts['specCurve'] = chart;
+      chart.setOption({
+        tooltip: { trigger: 'axis', formatter: p => `T=${p[0].data[0].toFixed(2)}s, α=${p[0].data[1].toFixed(4)}` },
+        title: { text: '地震影响系数曲线 (GB 50011-2010)', left: 'center', textStyle: { fontSize: 13 } },
+        xAxis: { type: 'value', name: '周期 T (s)', min: 0, max: 6 },
+        yAxis: { type: 'value', name: '地震影响系数 α' },
+        series: [{
+          type: 'line', data: r.spectrumT.map((v, i) => [v, r.spectrumAlpha[i]]),
+          lineStyle: { width: 2, color: '#f04438' }, showSymbol: false,
+          markLine: {
+            silent: true,
+            data: [
+              { xAxis: Tg, label: { formatter: `Tg=${Tg}s` }, lineStyle: { type: 'dashed' } },
+              { yAxis: alphaMax, label: { formatter: `αmax=${alphaMax}` }, lineStyle: { type: 'dashed' } }
+            ]
+          }
+        }]
+      }, true);
+    }
+
+    // Floor seismic force distribution
+    const forceDom = document.getElementById('spectrumForceChart');
+    if (forceDom) {
+      let chart = this.charts['specForce'];
+      if (!chart) chart = echarts.init(forceDom), this.charts['specForce'] = chart;
+      const floors = Array.from({ length: n }, (_, i) => n - i);
+      chart.setOption({
+        tooltip: { trigger: 'axis' },
+        title: { text: '各层地震作用力分布', left: 'center', textStyle: { fontSize: 13 } },
+        xAxis: { type: 'value', name: '地震作用力 (kN)' },
+        yAxis: { type: 'category', data: floors.map(f => `F${f}`), inverse: true },
+        series: [{
+          type: 'bar', data: r.combinedForces.map((v, i) => [v, n - i]),
+          itemStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+              { offset: 0, color: '#1a73e8' }, { offset: 1, color: '#f04438' }
+            ])
+          }, barMaxWidth: 30,
+          label: { show: true, position: 'right', formatter: p => p.data[0].toFixed(1) }
+        }]
+      }, true);
+    }
+
+    // Floor displacement
+    const dispDom = document.getElementById('spectrumDispChart');
+    if (dispDom) {
+      let chart = this.charts['specDisp'];
+      if (!chart) chart = echarts.init(dispDom), this.charts['specDisp'] = chart;
+      const floors2 = Array.from({ length: n }, (_, i) => i + 1);
+      chart.setOption({
+        tooltip: { trigger: 'axis' },
+        title: { text: '各层位移', left: 'center', textStyle: { fontSize: 13 } },
+        xAxis: { type: 'value', name: '位移 (mm)' },
+        yAxis: { type: 'category', data: floors2.map(f => `F${f}`), inverse: true },
+        series: [{
+          type: 'bar', data: r.combinedDisps.map((v, i) => [v, i + 1]),
+          itemStyle: { color: '#12b76a' }, barMaxWidth: 25,
+          label: { show: true, position: 'right', formatter: p => p.data[0].toFixed(2) + 'mm' }
+        }]
+      }, true);
+    }
+  },
+
+  // ==================== BASE SHEAR METHOD ====================
+  updateBSParams() {
+    this.bsParams.alphaMax = SeismicCode.getAlphaMax(this.bsParams.intensity);
+    this.bsParams.Tg = SeismicCode.getTg(this.bsParams.siteClass, this.bsParams.earthquakeGroup);
+  },
+
+  computeBaseShear() {
+    this.updateBSParams();
+    const n = this.structure.floors.length;
+    const { T1, alphaMax, Tg } = this.bsParams;
+    const g = 9.81;
+
+    // Seismic influence coefficient at T1
+    const alpha1 = SeismicCode.alpha(T1, alphaMax, Tg);
+
+    // Total equivalent gravity load
+    const Geq = this.totalMass * g;
+
+    // Total horizontal seismic force
+    const FEk = alpha1 * Geq;
+
+    // Top additional seismic force coefficient delta_n
+    let deltaN = 0;
+    if (T1 > 1.4 * Tg) {
+      const table = { 1: 0.08, 2: 0.07, 3: 0.05 }; // simplified
+      deltaN = T1 <= 0.35 ? 0.08 : (T1 <= 0.55 ? 0.07 + (0.08 - 0.07) * (0.55 - T1) / 0.2 : 0.0);
+      // More accurate:
+      if (Tg <= 0.35) deltaN = 0.08 * T1 + 0.07;
+      else if (Tg <= 0.55) deltaN = 0.08 * T1 + 0.01;
+      else deltaN = 0.08 * T1 - 0.02;
+      deltaN = Math.max(0, Math.min(0.3, deltaN));
+    }
+
+    const additionalTopForce = deltaN * FEk;
+
+    // Floor heights (cumulative from ground)
+    const heights = [];
+    let cumH = 0;
+    for (let i = 0; i < n; i++) {
+      cumH += this.structure.floors[i].height;
+      heights.push(cumH);
+    }
+
+    // Gi * Hi sum
+    let sumGH = 0;
+    const floorData = [];
+    for (let i = 0; i < n; i++) {
+      const Gi = this.structure.floors[i].mass * g;
+      const Hi = heights[i];
+      const GHi = Gi * Hi;
+      sumGH += GHi;
+      floorData.push({ height: Hi, Gi, GHi });
+    }
+
+    // Distribute forces
+    const floorResults = [];
+    let sumFi = 0;
+    for (let i = 0; i < n; i++) {
+      let Fi = (floorData[i].GHi / sumGH) * FEk * (1 - deltaN);
+      if (i === n - 1) Fi += additionalTopForce;
+      sumFi += Fi;
+      // Story shear (from top down)
+      let Vi = 0;
+      for (let j = i; j < n; j++) {
+        let Fj = (floorData[j].GHi / sumGH) * FEk * (1 - deltaN);
+        if (j === n - 1) Fj += additionalTopForce;
+        Vi += Fj;
+      }
+      floorResults.push({
+        height: floorData[i].height, Gi: floorData[i].Gi, GHi: floorData[i].GHi,
+        Fi, Vi
+      });
+    }
+
+    this.baseshearResult = {
+      alpha1, Geq, FEk, deltaN, additionalTopForce, floorResults
+    };
+    this.baseshearComputed = true;
+    this.$nextTick(() => this.drawBSCharts());
+  },
+
+  drawBSCharts() {
+    if (!this.baseshearResult) return;
+    const r = this.baseshearResult;
+    const n = r.floorResults.length;
+
+    const bsDom = document.getElementById('bsForceChart');
+    if (bsDom) {
+      let chart = this.charts['bsForce'];
+      if (!chart) chart = echarts.init(bsDom), this.charts['bsForce'] = chart;
+      const floors = Array.from({ length: n }, (_, i) => n - i);
+      chart.setOption({
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['楼层地震力 Fᵢ (kN)', '层间剪力 Vᵢ (kN)'] },
+        grid: [
+          { left: '10%', right: '55%', top: 40, bottom: 30 },
+          { left: '55%', right: '10%', top: 40, bottom: 30 }
+        ],
+        xAxis: [
+          { type: 'value', name: '力 (kN)', gridIndex: 0 },
+          { type: 'value', name: '力 (kN)', gridIndex: 1 }
+        ],
+        yAxis: [
+          { type: 'category', data: floors.map(f => `F${f}`), gridIndex: 0, inverse: true },
+          { type: 'category', data: floors.map(f => `F${f}`), gridIndex: 1, inverse: true,
+            axisLabel: { show: false } }
+        ],
+        series: [
+          {
+            name: '楼层地震力 Fᵢ (kN)', type: 'bar',
+            data: r.floorResults.map((v, i) => [v.Fi, n - i]),
+            xAxisIndex: 0, yAxisIndex: 0,
+            itemStyle: { color: '#1a73e8' }, barMaxWidth: 25,
+            label: { show: true, position: 'right', formatter: p => p.data[0].toFixed(0), fontSize: 10 }
+          },
+          {
+            name: '层间剪力 Vᵢ (kN)', type: 'bar',
+            data: r.floorResults.map((v, i) => [v.Vi, n - i]),
+            xAxisIndex: 1, yAxisIndex: 1,
+            itemStyle: { color: '#f04438' }, barMaxWidth: 25,
+            label: { show: true, position: 'right', formatter: p => p.data[0].toFixed(0), fontSize: 10 }
+          }
+        ]
+      }, true);
+    }
+  }
+}
+}).mount('#app');
+</script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.1/math.min.js"></script>
+<script src="https://unpkg.com/konva@9/konva.min.js"></script>
+</body>
+</html>

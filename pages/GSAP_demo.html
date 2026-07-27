@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>GSAP 物理碰撞（已修复边缘BUG）</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0f172a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  .stage {
+    position: relative;
+    width: 900px;
+    height: 550px;
+    border: 3px solid #1e293b;
+    background: #111827;
+    overflow: hidden;
+  }
+  .ball {
+    position: absolute;
+    border-radius: 50%;
+  }
+</style>
+</head>
+<body>
+<div class="site-bar">
+    <span>⚙️ GSAP 物理碰撞演示</span>
+    <a href="../index.html">← 返回首页</a>
+</div>
+<div class="stage" id="stage"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script>
+const stage = document.getElementById('stage');
+const WIDTH = 900;
+const HEIGHT = 550;
+const balls = [];
+
+class Ball {
+  constructor(x, y, vx, vy, radius, color) {
+    this.x = x;
+    this.y = y;
+    this.vx = vx;
+    this.vy = vy;
+    this.radius = radius;
+    this.color = color;
+    this.mass = radius * radius; // 质量与面积成正比
+
+    const el = document.createElement('div');
+    el.className = 'ball';
+    el.style.width = radius * 2 + 'px';
+    el.style.height = radius * 2 + 'px';
+    el.style.background = color;
+    this.el = el;
+    stage.appendChild(el);
+  }
+  render() {
+    gsap.set(this.el, { x: this.x - this.radius, y: this.y - this.radius });
+  }
+}
+
+// 随机工具
+function rand(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+// 生成小球
+for (let i = 0; i < 12; i++) {
+  const r = rand(14, 30);
+  balls.push(new Ball(
+    rand(r, WIDTH - r),
+    rand(r, HEIGHT - r),
+    rand(-3, 3),
+    rand(-3, 3),
+    r,
+    `hsl(${rand(170, 280)}, 75%, 65%)`
+  ));
+}
+
+// 物理循环
+gsap.ticker.add(update);
+
+function update() {
+  // ==============================================
+  // 1. 移动 + 边界碰撞（修复：边缘碰墙，不是球心）
+  // ==============================================
+  for (const b of balls) {
+    b.x += b.vx;
+    b.y += b.vy;
+
+    // 左边界
+    if (b.x < b.radius) {
+      b.x = b.radius;
+      b.vx *= -0.95;
+    }
+    // 右边界
+    if (b.x > WIDTH - b.radius) {
+      b.x = WIDTH - b.radius;
+      b.vx *= -0.95;
+    }
+    // 上边界
+    if (b.y < b.radius) {
+      b.y = b.radius;
+      b.vy *= -0.95;
+    }
+    // 下边界
+    if (b.y > HEIGHT - b.radius) {
+      b.y = HEIGHT - b.radius;
+      b.vy *= -0.95;
+    }
+  }
+
+  // ==============================================
+  // 2. 小球之间碰撞（动量守恒 + 正确位置分离）
+  // ==============================================
+  for (let i = 0; i < balls.length; i++) {
+    for (let j = i + 1; j < balls.length; j++) {
+      const b1 = balls[i];
+      const b2 = balls[j];
+
+      const dx = b2.x - b1.x;
+      const dy = b2.y - b1.y;
+      const dist = Math.hypot(dx, dy);
+      const minDist = b1.radius + b2.radius;
+
+      if (dist < minDist) {
+        // 归一化碰撞法线
+        const nx = dx / dist;
+        const ny = dy / dist;
+
+        // 相对速度
+        const vx = b2.vx - b1.vx;
+        const vy = b2.vy - b1.vy;
+        const dot = vx * nx + vy * ny;
+
+        // 正在靠近才处理
+        if (dot > 0) continue;
+
+        // 冲量
+        const impulse = (2 * dot) / (b1.mass + b2.mass);
+        b1.vx += impulse * b2.mass * nx;
+        b1.vy += impulse * b2.mass * ny;
+        b2.vx -= impulse * b1.mass * nx;
+        b2.vy -= impulse * b1.mass * ny;
+
+        // 位置分离，防止粘在一起
+        const overlap = minDist - dist;
+        const shiftX = overlap * nx * 0.5;
+        const shiftY = overlap * ny * 0.5;
+        b1.x -= shiftX;
+        b1.y -= shiftY;
+        b2.x += shiftX;
+        b2.y += shiftY;
+      }
+    }
+  }
+
+  // 渲染
+  balls.forEach(b => b.render());
+}
+</script>
+</body>
+</html>

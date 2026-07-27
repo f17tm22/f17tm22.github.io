@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVD 碰撞弹跳</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Segoe UI', 'PingFang SC', sans-serif;
+        }
+
+        canvas {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(12px);
+            padding: 12px 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .btn {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            color: #fff;
+        }
+
+        .btn-upload {
+            background: #6366f1;
+        }
+        .btn-upload:hover {
+            background: #4f46e5;
+        }
+
+        .btn-speed {
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .btn-speed:hover {
+            background: rgba(255, 255, 255, 0.22);
+        }
+
+        .btn-reset {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .btn-reset:hover {
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .hint {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 18px;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="site-bar">
+        <span>⚙️ DVD 碰撞弹跳</span>
+        <a href="../index.html">← 返回首页</a>
+    </div>
+    <canvas id="canvas"></canvas>
+    <div class="hint" id="hint">点击下方按钮上传一张图片</div>
+
+    <div class="controls">
+        <input type="file" class="file-input" id="fileInput" accept="image/*">
+        <button class="btn btn-upload" id="btnUpload">上传图片</button>
+        <button class="btn btn-speed" id="btnSpeed">加速</button>
+        <button class="btn btn-reset" id="btnReset">重置速度</button>
+    </div>
+
+    <script>
+        (function () {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const hint = document.getElementById('hint');
+            const fileInput = document.getElementById('fileInput');
+
+            let img = null;
+            let imgW = 0;
+            let imgH = 0;
+
+            // 缩放系数: 图片占屏幕的 ? 比例
+            const SCALE_RATIO = 0.18;
+
+            // 当前位置 (左上角)
+            let x = 0;
+            let y = 0;
+
+            // 速度 (像素/秒)
+            const BASE_SPEED = 280;
+            let speedMultiplier = 1;
+            let vx = 0;
+            let vy = 0;
+
+            // 时间追踪
+            let lastTime = 0;
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+
+                // 重新计算图片尺寸
+                if (img) {
+                    const scale = Math.min(
+                        (canvas.width * SCALE_RATIO) / img.width,
+                        (canvas.height * SCALE_RATIO) / img.height
+                    );
+                    imgW = img.width * scale;
+                    imgH = img.height * scale;
+                }
+
+                // 如果当前位置超出新边界，拉回来
+                clampPosition();
+            }
+
+            function clampPosition() {
+                const maxX = canvas.width - imgW;
+                const maxY = canvas.height - imgH;
+                if (x < 0) x = 0;
+                if (y < 0) y = 0;
+                if (imgW > 0 && x > maxX) x = maxX;
+                if (imgH > 0 && y > maxY) y = maxY;
+            }
+
+            function initVelocity() {
+                const speed = BASE_SPEED * speedMultiplier;
+                const angle = Math.random() * Math.PI * 2;
+                vx = Math.cos(angle) * speed;
+                vy = Math.sin(angle) * speed;
+
+                // 避免过于水平或垂直
+                const minRatio = 0.25;
+                if (Math.abs(vy) < Math.abs(vx) * minRatio) {
+                    vy = (vy >= 0 ? 1 : -1) * Math.abs(vx) * minRatio;
+                }
+                if (Math.abs(vx) < Math.abs(vy) * minRatio) {
+                    vx = (vx >= 0 ? 1 : -1) * Math.abs(vy) * minRatio;
+                }
+            }
+
+            function loadImage(file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const image = new Image();
+                    image.onload = function () {
+                        img = image;
+
+                        const scale = Math.min(
+                            (canvas.width * SCALE_RATIO) / img.width,
+                            (canvas.height * SCALE_RATIO) / img.height
+                        );
+                        imgW = img.width * scale;
+                        imgH = img.height * scale;
+
+                        // 随机初始位置
+                        x = Math.random() * (canvas.width - imgW);
+                        y = Math.random() * (canvas.height - imgH);
+
+                        initVelocity();
+                        hint.style.opacity = '0';
+                    };
+                    image.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            function update(dt) {
+                if (!img) return;
+
+                // dt 上限防止大跳帧
+                const capped = Math.min(dt, 0.1);
+
+                x += vx * capped;
+                y += vy * capped;
+
+                let bounced = false;
+
+                // 左右碰撞
+                if (x <= 0) {
+                    x = 0;
+                    vx = Math.abs(vx);
+                    bounced = true;
+                } else if (x + imgW >= canvas.width) {
+                    x = canvas.width - imgW;
+                    vx = -Math.abs(vx);
+                    bounced = true;
+                }
+
+                // 上下碰撞
+                if (y <= 0) {
+                    y = 0;
+                    vy = Math.abs(vy);
+                    bounced = true;
+                } else if (y + imgH >= canvas.height) {
+                    y = canvas.height - imgH;
+                    vy = -Math.abs(vy);
+                    bounced = true;
+                }
+
+                // 碰撞时微调角度避免卡边缘死循环
+                if (bounced) {
+                    const tinyJitter = (Math.random() - 0.5) * 0.3;
+                    const angle = Math.atan2(vy, vx) + tinyJitter;
+                    const speed = BASE_SPEED * speedMultiplier;
+                    vx = Math.cos(angle) * speed;
+                    vy = Math.sin(angle) * speed;
+                }
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                if (img) {
+                    ctx.drawImage(img, x, y, imgW, imgH);
+                }
+            }
+
+            function loop(timestamp) {
+                if (lastTime === 0) lastTime = timestamp;
+                const dt = (timestamp - lastTime) / 1000;
+                lastTime = timestamp;
+
+                update(dt);
+                draw();
+
+                requestAnimationFrame(loop);
+            }
+
+            // --- 事件绑定 ---
+
+            document.getElementById('btnUpload').addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    loadImage(e.target.files[0]);
+                }
+            });
+
+            document.getElementById('btnSpeed').addEventListener('click', () => {
+                speedMultiplier += 0.5;
+                if (speedMultiplier > 5) speedMultiplier = 5;
+                // 保持当前方向，仅改速率
+                const angle = Math.atan2(vy, vx);
+                const speed = BASE_SPEED * speedMultiplier;
+                vx = Math.cos(angle) * speed;
+                vy = Math.sin(angle) * speed;
+            });
+
+            document.getElementById('btnReset').addEventListener('click', () => {
+                speedMultiplier = 1;
+                const angle = Math.atan2(vy, vx);
+                const speed = BASE_SPEED * speedMultiplier;
+                vx = Math.cos(angle) * speed;
+                vy = Math.sin(angle) * speed;
+            });
+
+            window.addEventListener('resize', resize);
+
+            // 支持拖拽上传
+            document.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            document.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    loadImage(file);
+                }
+            });
+
+            // 启动
+            resize();
+            requestAnimationFrame(loop);
+        })();
+    </script>
+</body>
+</html>
